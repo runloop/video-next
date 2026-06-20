@@ -54,19 +54,22 @@ export default async function WatchPage({
     <div className="flex min-h-screen flex-col bg-white text-[#1f2a24] font-body">
       <SiteHeader />
 
-      <article className="mx-auto w-full max-w-6xl px-6 py-8">
-        <nav className="mb-4 text-sm font-semibold text-[#5c6b62]">
+      <article className="mx-auto w-full max-w-6xl px-6 pb-8 pt-0 sm:pt-8">
+        <div className="-mx-6 aspect-video overflow-hidden bg-black sm:mx-0 sm:rounded-2xl sm:shadow-lg">
+          <VideoEmbed videoId={v.videoId} title={v.keyword} />
+        </div>
+
+        <nav className="mb-1 mt-3 text-sm font-semibold text-[#5c6b62] sm:mt-6">
           <Link href="/" className="hover:text-[#1f2a24]">
             Home
           </Link>{" "}
-          <span className="text-[#c2ccc6]">/</span> {v.title}
+          <span className="text-[#c2ccc6]">/</span>{" "}
+          <Link href="/videos" className="hover:text-[#1f2a24]">
+            All videos
+          </Link>
         </nav>
 
         <h1 className="font-display text-3xl font-bold leading-tight sm:text-4xl">{v.keyword}</h1>
-
-        <div className="mt-5 aspect-video w-full overflow-hidden rounded-2xl bg-black shadow-lg">
-          <VideoEmbed videoId={v.videoId} title={v.keyword} />
-        </div>
 
         <div className="mt-5 flex flex-wrap gap-3 text-sm font-semibold text-[#5c6b62]">
           <span className="rounded-lg bg-[#f3f7f4] px-3 py-1.5">⏱ {v.durationLabel}</span>

@@ -224,9 +224,11 @@ export function getChannelSchema(): string {
   return schema;
 }
 
-/** Branding for the active channel. */
+let activeBranding: ChannelBranding | undefined;
+
+/** Branding for the active channel — resolved and validated once, then memoised. */
 export function getBranding(): ChannelBranding {
-  return CHANNELS[getChannelSchema()];
+  return (activeBranding ??= CHANNELS[getChannelSchema()]);
 }
 
 /** Curated theme pages for the active channel. */

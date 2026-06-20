@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { Nunito, Fredoka } from "next/font/google";
-import { SITE } from "@/lib/site";
+import { getBranding } from "@/lib/channel";
 import "./globals.css";
+
+const SITE = getBranding();
 
 const nunito = Nunito({
   variable: "--font-body",

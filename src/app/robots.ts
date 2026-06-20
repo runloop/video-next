@@ -1,7 +1,8 @@
 import type { MetadataRoute } from "next";
-import { SITE } from "@/lib/site";
+import { getBranding } from "@/lib/channel";
 
 export default function robots(): MetadataRoute.Robots {
+  const SITE = getBranding();
   return {
     rules: {
       userAgent: "*",

@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
-import { getCategories } from "@/lib/channel";
-import { SITE } from "@/lib/site";
+import { getCategories, getBranding } from "@/lib/channel";
+
+const SITE = getBranding();
 
 export const metadata: Metadata = {
   title: `Themes — ${SITE.name}`,

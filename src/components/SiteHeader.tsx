@@ -1,11 +1,12 @@
 import Link from "next/link";
+import { SITE } from "@/lib/site";
 
 export default function SiteHeader() {
   return (
     <header className="border-b border-[#e6ede8]">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
         <Link href="/" className="flex items-center gap-2 font-display text-xl font-bold tracking-tight">
-          🐾 Cat TV
+          {SITE.headerLabel}
         </Link>
         <nav className="flex items-center gap-6 text-sm font-semibold text-[#5c6b62]">
           <Link href="/#about" className="hover:text-[#1f2a24]">

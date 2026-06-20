@@ -1,10 +1,8 @@
-// Site-wide constants. Change `url` to the real production domain before launch —
-// it drives metadataBase, canonical URLs, the sitemap and JSON-LD.
-export const SITE = {
-  name: "Cat TV for Cats",
-  url: "https://www.cattvforcats.com",
-  tagline: "Live bird & squirrel cam for cats",
-  description:
-    "A fresh, calming daily stream of birds, squirrels and fish — hand-picked to keep indoor cats happily watching for hours.",
-  youtube: "https://www.youtube.com/@patsysgarden",
-};
+// Site-wide branding for the active channel, resolved from CHANNEL_SCHEMA.
+// To change branding or add a channel, edit src/lib/channel.ts.
+import { getBranding } from "./channel";
+
+export const SITE = getBranding();
+
+/** Long-form intro copy shown on the homepage. */
+export const introParagraphs = SITE.introParagraphs;

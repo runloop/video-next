@@ -6,9 +6,12 @@ import SiteFooter from "@/components/SiteFooter";
 import VideoEmbed from "@/components/VideoEmbed";
 import VideoCard from "@/components/VideoCard";
 import VideoSchema from "@/components/VideoSchema";
-import { getVideo, videos } from "@/lib/videos";
+import { getVideo, getVideos, getRelated } from "@/lib/videos";
 
-export function generateStaticParams() {
+export const revalidate = 3600;
+
+export async function generateStaticParams() {
+  const videos = await getVideos();
   return videos.map((v) => ({ id: v.slug }));
 }
 
@@ -18,7 +21,7 @@ export async function generateMetadata({
   params: Promise<{ id: string }>;
 }): Promise<Metadata> {
   const { id } = await params;
-  const v = getVideo(id);
+  const v = await getVideo(id);
   if (!v) return {};
   return {
     title: v.metaTitle,
@@ -40,10 +43,10 @@ export default async function WatchPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const v = getVideo(id);
+  const v = await getVideo(id);
   if (!v) notFound();
 
-  const others = videos.filter((o) => o.slug !== v.slug).slice(0, 3);
+  const others = await getRelated(v, 3);
 
   return (
     <div className="flex min-h-screen flex-col bg-white text-[#1f2a24] font-body">
@@ -66,11 +69,12 @@ export default async function WatchPage({
         <div className="mt-5 flex flex-wrap gap-3 text-sm font-semibold text-[#5c6b62]">
           <span className="rounded-lg bg-[#f3f7f4] px-3 py-1.5">⏱ {v.durationLabel}</span>
           <span className="rounded-lg bg-[#f3f7f4] px-3 py-1.5">🔇 Muted autoplay</span>
-          <span className="rounded-lg bg-[#f3f7f4] px-3 py-1.5">{v.emoji} {v.title}</span>
         </div>
 
-        <p className="mt-5 text-lg leading-relaxed text-[#3f4d45]">{v.summary}</p>
-        <p className="mt-4 text-lg leading-relaxed text-[#3f4d45]">{v.body}</p>
+        {v.summary && (
+          <p className="mt-5 text-lg leading-relaxed text-[#3f4d45]">{v.summary}</p>
+        )}
+        {v.body && <p className="mt-4 text-lg leading-relaxed text-[#3f4d45]">{v.body}</p>}
       </article>
 
       <section className="border-t border-[#e6ede8] bg-[#fafcfb]">

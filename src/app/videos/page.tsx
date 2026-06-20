@@ -3,7 +3,9 @@ import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 import VideoCard from "@/components/VideoCard";
 import { getVideos } from "@/lib/videos";
-import { SITE } from "@/lib/site";
+import { getBranding } from "@/lib/channel";
+
+const SITE = getBranding();
 
 export const metadata: Metadata = {
   title: `All videos — ${SITE.name}`,

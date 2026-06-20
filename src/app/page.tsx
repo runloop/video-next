@@ -5,7 +5,7 @@ import VideoEmbed from "@/components/VideoEmbed";
 import VideoCard from "@/components/VideoCard";
 import VideoSchema from "@/components/VideoSchema";
 import { getFeaturedVideo, getPopularVideos } from "@/lib/videos";
-import { SITE, introParagraphs } from "@/lib/site";
+import { getBranding } from "@/lib/channel";
 
 export const metadata: Metadata = {
   alternates: { canonical: "/" },
@@ -15,6 +15,7 @@ export const revalidate = 300;
 
 export default async function Home() {
   const [v, videos] = await Promise.all([getFeaturedVideo(), getPopularVideos(6)]);
+  const SITE = getBranding();
 
   if (!v) {
     return (
@@ -70,7 +71,7 @@ export default async function Home() {
       <section id="about" className="mx-auto w-full max-w-3xl scroll-mt-20 px-6 py-12">
         <h2 className="font-display text-3xl font-bold">{SITE.aboutHeading}</h2>
         <div className="mt-4 flex flex-col gap-4 text-lg leading-relaxed text-[#3f4d45]">
-          {introParagraphs.map((p, i) => (
+          {SITE.introParagraphs.map((p, i) => (
             <p key={i}>{p}</p>
           ))}
         </div>

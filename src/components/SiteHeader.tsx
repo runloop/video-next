@@ -1,7 +1,8 @@
 import Link from "next/link";
-import { SITE } from "@/lib/site";
+import { getBranding } from "@/lib/channel";
 
 export default function SiteHeader() {
+  const SITE = getBranding();
   return (
     <header className="border-b border-[#e6ede8]">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">

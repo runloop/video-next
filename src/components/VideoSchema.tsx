@@ -1,8 +1,9 @@
 // VideoObject JSON-LD — this is what makes the page eligible for video rich results.
 import type { Video } from "@/lib/videos";
-import { SITE } from "@/lib/site";
+import { getBranding } from "@/lib/channel";
 
 export function videoObjectLd(v: Video) {
+  const SITE = getBranding();
   return {
     "@context": "https://schema.org",
     "@type": "VideoObject",

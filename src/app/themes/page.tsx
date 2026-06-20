@@ -33,7 +33,7 @@ export default function ThemesPage() {
               <Link
                 key={c.slug}
                 href={`/themes/${c.slug}`}
-                className="group rounded-xl border border-[#e6ede8] bg-white p-5 transition hover:border-[#2e9e6b] hover:shadow-sm"
+                className="group rounded-xl border border-[#e6ede8] bg-white p-5 transition hover:border-accent hover:shadow-sm"
               >
                 <h2 className="font-display text-lg font-bold leading-tight">{c.title}</h2>
                 <p className="mt-1 text-sm text-[#5c6b62]">{c.description}</p>

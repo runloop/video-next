@@ -34,14 +34,14 @@ export default async function Home() {
       <SiteHeader />
 
       {/* Split hero: video left, indexable text right */}
-      <section className="mx-auto w-full max-w-6xl px-6 py-10">
+      <section className="mx-auto w-full max-w-6xl px-6 pb-10 pt-0 sm:pt-10">
         <div className="grid gap-8 lg:grid-cols-[1.4fr_1fr] lg:items-center">
-          <div className="aspect-video overflow-hidden rounded-2xl bg-black shadow-lg">
+          <div className="-mx-6 aspect-video overflow-hidden bg-black sm:mx-0 sm:rounded-2xl sm:shadow-lg">
             <VideoEmbed videoId={v.videoId} title={v.keyword} />
           </div>
           <div>
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-[#e7f6ee] px-3 py-1 text-sm font-bold text-[#2e9e6b]">
-              <span className="h-2 w-2 rounded-full bg-[#2e9e6b] animate-pulse" /> Streaming now
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-accent-soft px-3 py-1 text-sm font-bold text-accent">
+              <span className="h-2 w-2 rounded-full bg-accent animate-pulse" /> Streaming now
             </span>
             <h1 className="mt-3 font-display text-4xl font-bold leading-[1.1]">{v.keyword}</h1>
             <p className="mt-4 text-lg leading-relaxed text-[#3f4d45]">{v.summary}</p>

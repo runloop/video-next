@@ -22,7 +22,7 @@ export default function VideoCard({
     <Link
       href={target}
       {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
-      className="group overflow-hidden rounded-xl border border-[#e6ede8] bg-white transition hover:border-[#2e9e6b] hover:shadow-sm"
+      className="group overflow-hidden rounded-xl border border-[#e6ede8] bg-white transition hover:border-accent hover:shadow-sm"
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img

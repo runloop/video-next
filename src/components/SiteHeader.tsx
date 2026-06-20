@@ -12,7 +12,7 @@ export default function SiteHeader() {
           <Link href="/#about" className="hover:text-[#1f2a24]">
             About
           </Link>
-          <Link href="/#videos" className="hover:text-[#1f2a24]">
+          <Link href="/videos" className="hover:text-[#1f2a24]">
             All videos
           </Link>
           <Link href="/" className="rounded-lg bg-[#2e9e6b] px-4 py-2 text-white hover:bg-[#268a5d]">

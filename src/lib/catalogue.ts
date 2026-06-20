@@ -33,6 +33,8 @@ export interface Video {
   uploadDate: string;
   /** Lifetime YouTube views; 0 when analytics haven't landed yet. */
   views: number;
+  /** Concurrent live viewers (active streams only); 0 otherwise. */
+  liveViewers: number;
 }
 
 /** A published-video row, as selected by the catalogue query in videos.ts. */
@@ -51,6 +53,8 @@ export interface StreamRow {
   video_id: string;
   duration_hours: number | null;
   started_at: Date | string | null;
+  views: number | null;
+  live_viewers: number | null;
   title: string;
   description: string | null;
   tags: string[] | null;
@@ -65,6 +69,7 @@ interface Common {
   minutes: number;
   date: Date | string | null;
   views: number;
+  liveViewers: number;
 }
 
 // Default published-video target length when the DB stores 0 (minutes).
@@ -124,6 +129,7 @@ function publishedToCommon(row: PublishedRow): Common {
     minutes: row.duration_minutes ?? 0,
     date: row.published_at,
     views: row.views ?? 0,
+    liveViewers: 0,
   };
 }
 
@@ -135,7 +141,8 @@ function streamToCommon(row: StreamRow): Common {
     videoId: (row.video_id ?? "").trim(),
     minutes: Math.round((row.duration_hours ?? 0) * 60),
     date: row.started_at,
-    views: 0,
+    views: row.views ?? 0,
+    liveViewers: row.live_viewers ?? 0,
   };
 }
 
@@ -155,6 +162,7 @@ function toVideo(c: Common, siteName: string, seen: Set<string>): Video {
     ...durationFromMinutes(c.minutes),
     uploadDate: toIsoDate(c.date),
     views: c.views,
+    liveViewers: c.liveViewers,
   };
 }
 
@@ -228,4 +236,9 @@ export function relativeDay(isoDate: string, now: Date): string {
   if (days < 30) return ago(Math.round(days / 7), "week");
   if (days < 365) return ago(Math.round(days / 30), "month");
   return ago(Math.round(days / 365), "year");
+}
+
+/** Compact display count, e.g. 1234 -> "1.2K", 2_500_000 -> "2.5M". */
+export function formatCount(n: number): string {
+  return new Intl.NumberFormat("en", { notation: "compact", maximumFractionDigits: 1 }).format(n);
 }

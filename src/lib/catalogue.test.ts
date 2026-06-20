@@ -10,6 +10,7 @@ import {
   relatedTo,
   featured,
   relativeDay,
+  formatCount,
   type PublishedRow,
   type StreamRow,
   type Video,
@@ -36,6 +37,8 @@ function streamRow(over: Partial<StreamRow> = {}): StreamRow {
     video_id: "stream1",
     duration_hours: 3,
     started_at: "2026-02-01T08:00:00Z",
+    views: 0,
+    live_viewers: 0,
     title: "Live Now",
     description: "Streaming.",
     tags: [],
@@ -111,10 +114,15 @@ describe("publishedToVideos", () => {
 });
 
 describe("streamsToVideos", () => {
-  test("converts duration_hours to minutes and zeroes views", () => {
+  test("converts duration_hours to minutes", () => {
     const [v] = streamsToVideos([streamRow({ duration_hours: 2.5 })], SITE);
     expect(v.durationLabel).toBe("2h 30m");
-    expect(v.views).toBe(0);
+  });
+
+  test("carries views and live viewers from the row", () => {
+    const [v] = streamsToVideos([streamRow({ views: 48000, live_viewers: 1200 })], SITE);
+    expect(v.views).toBe(48000);
+    expect(v.liveViewers).toBe(1200);
   });
 });
 
@@ -229,5 +237,17 @@ describe("relativeDay", () => {
   test("future dates and blanks are safe", () => {
     expect(relativeDay("2026-07-01", now)).toBe("today");
     expect(relativeDay("", now)).toBe("");
+  });
+});
+
+describe("formatCount", () => {
+  test("leaves small numbers as-is", () => {
+    expect(formatCount(0)).toBe("0");
+    expect(formatCount(842)).toBe("842");
+  });
+
+  test("compacts thousands and millions", () => {
+    expect(formatCount(1234)).toBe("1.2K");
+    expect(formatCount(2_500_000)).toBe("2.5M");
   });
 });

@@ -3,7 +3,7 @@ import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 import VideoCard from "@/components/VideoCard";
 import { getLiveStreams } from "@/lib/videos";
-import { relativeDay } from "@/lib/catalogue";
+import { relativeDay, formatCount } from "@/lib/catalogue";
 import { getBranding } from "@/lib/channel";
 
 const SITE = getBranding();
@@ -38,9 +38,17 @@ export default async function StreamsPage() {
                 <VideoCard
                   key={s.slug}
                   video={s}
-                  href={`https://www.youtube.com/watch?v=${s.videoId}`}
+                  href={`/streams/${s.slug}`}
                   live
-                  metaLabel={started ? `24 hours a day · Started ${started}` : "24 hours a day"}
+                  metaLabel={
+                    <>
+                      <span className="sm:hidden">24hr/day</span>
+                      <span className="hidden sm:inline">24 hours a day</span>
+                      {s.liveViewers > 0 && <> · {formatCount(s.liveViewers)} watching</>}
+                      {s.views > 0 && <> · {formatCount(s.views)} views</>}
+                      {started && <> · Started {started}</>}
+                    </>
+                  }
                 />
               );
             })}

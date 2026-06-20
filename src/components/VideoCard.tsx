@@ -1,5 +1,7 @@
 import Link from "next/link";
+import type { ReactNode } from "react";
 import type { Video } from "@/lib/videos";
+import { formatCount } from "@/lib/catalogue";
 
 export default function VideoCard({
   video,
@@ -10,7 +12,7 @@ export default function VideoCard({
   video: Video;
   href?: string;
   /** Overrides the small caption under the title (defaults to the duration). */
-  metaLabel?: string;
+  metaLabel?: ReactNode;
   /** Marks a live stream: prefixes the title with a red circle. */
   live?: boolean;
 }) {
@@ -34,7 +36,14 @@ export default function VideoCard({
           {video.title}
         </h3>
         <p className="text-sm text-[#5c6b62]">{video.blurb}</p>
-        <p className="mt-1 text-xs font-semibold text-[#9aa8a0]">{metaLabel ?? video.durationLabel}</p>
+        <p className="mt-1 text-xs font-semibold text-[#9aa8a0]">
+          {metaLabel ?? (
+            <>
+              {video.durationLabel}
+              {video.views > 0 && <> · {formatCount(video.views)} views</>}
+            </>
+          )}
+        </p>
       </div>
     </Link>
   );

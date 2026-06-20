@@ -4,14 +4,29 @@ import SiteFooter from "@/components/SiteFooter";
 import VideoEmbed from "@/components/VideoEmbed";
 import VideoCard from "@/components/VideoCard";
 import VideoSchema from "@/components/VideoSchema";
-import { featuredVideo, videos, introParagraphs } from "@/lib/videos";
+import { getFeaturedVideo, getPopularVideos } from "@/lib/videos";
+import { introParagraphs } from "@/lib/site";
 
 export const metadata: Metadata = {
   alternates: { canonical: "/" },
 };
 
-export default function Home() {
-  const v = featuredVideo;
+export const revalidate = 300;
+
+export default async function Home() {
+  const [v, videos] = await Promise.all([getFeaturedVideo(), getPopularVideos(6)]);
+
+  if (!v) {
+    return (
+      <div className="flex min-h-screen flex-col bg-white text-[#1f2a24] font-body">
+        <SiteHeader />
+        <main className="mx-auto w-full max-w-6xl flex-1 px-6 py-20 text-center text-[#5c6b62]">
+          No videos available yet.
+        </main>
+        <SiteFooter />
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen flex-col bg-white text-[#1f2a24] font-body">

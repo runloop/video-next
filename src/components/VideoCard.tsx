@@ -9,7 +9,7 @@ export default function VideoCard({ video }: { video: Video }) {
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
-        src={`https://i.ytimg.com/vi/${video.videoId}/hqdefault.jpg`}
+        src={`https://i.ytimg.com/vi/${video.videoId}/mqdefault.jpg`}
         alt={video.title}
         className="aspect-video w-full object-cover"
       />

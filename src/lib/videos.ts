@@ -1,131 +1,235 @@
-// The video catalogue. In production this comes from Postgres; here it's static.
-// videoId is a placeholder for the demo (all point at the real cam) — swap per video.
+// The video catalogue, sourced from Postgres (read-only) and cached with Next.js ISR.
+// See docs/adr/0001-video-data-fetching-and-caching.md.
+//
+// Two sources feed the site:
+//   - the homepage hero = the latest active stream  (<schema>.streams_active ⋈ public.projects)
+//   - the catalogue / watch pages = published videos (<schema>.published_videos_all ⋈ public.projects)
+//
+// All reads go through `unstable_cache` tagged `videos`, so POSTing to /api/revalidate
+// (revalidateTag('videos')) refreshes everything without a redeploy.
+import { unstable_cache } from "next/cache";
+import { query } from "./db";
+import { getChannelSchema } from "./channel";
+import { SITE } from "./site";
 
 export interface Video {
+  /** URL identifier. Derived from the title today; moves to a DB column later. */
   slug: string;
+  /** YouTube ID to embed. */
   videoId: string;
-  emoji: string;
-  /** Card / nav title */
+  /** Card / nav title (the YouTube video title). */
   title: string;
-  /** <h1> — the keyword phrase this page targets */
+  /** Tags, used for related videos. */
+  tags: string[];
+  /** <h1> — falls back to title until a dedicated SEO column exists. */
   keyword: string;
-  /** <title>/OG title — unique per page */
+  /** <title>/OG title. */
   metaTitle: string;
-  /** Short card subtitle */
+  /** Short card subtitle — falls back to the first line of the description. */
   blurb: string;
-  /** 2–3 sentences of indexable copy shown under the video */
+  /** Indexable copy shown under the video (the project description). */
   summary: string;
-  /** Longer below-the-fold copy, mostly for crawlers */
+  /** Longer below-the-fold copy. Empty until a dedicated SEO column exists. */
   body: string;
-  /** ISO-8601 duration for schema.org, e.g. PT3H12M */
+  /** ISO-8601 duration for schema.org, e.g. PT3H12M. */
   durationIso: string;
-  /** Human-readable duration */
+  /** Human-readable duration. */
   durationLabel: string;
-  /** ISO date the stream was published */
+  /** ISO date the video was published / the stream started. */
   uploadDate: string;
+  /** Lifetime YouTube views; 0 when analytics haven't landed yet. */
+  views: number;
 }
 
-export const videos: Video[] = [
-  {
-    slug: "bird-cam",
-    videoId: "gOPIkRa2D_E",
-    emoji: "🐦",
-    title: "Backyard Birds",
-    keyword: "Live bird & squirrel cam for cats",
-    metaTitle: "Live Bird & Squirrel Cam for Cats — Cat TV",
-    blurb: "Chirpy finches & robins at the feeder",
-    summary:
-      "A sunny morning at the feeder with finches, robins and the odd cheeky squirrel. Gentle movement, soft natural sound and no jump scares — exactly what keeps a cat glued to the screen.",
-    body: "Backyard Birds is our most popular cat TV stream: roughly three hours of real garden footage filmed at Patsy's Garden. Cats are drawn to the quick, darting motion of small birds, and the natural soundtrack of chirps and rustling leaves gives indoor cats a calming window onto the outside world without any of the startling noises you get on regular television.",
-    durationIso: "PT3H12M",
-    durationLabel: "3h 12m",
-    uploadDate: "2026-06-18",
-  },
-  {
-    slug: "squirrel-cam",
-    videoId: "gOPIkRa2D_E",
-    emoji: "🐿️",
-    title: "Squirrel Capers",
-    keyword: "Squirrel cam for cats",
-    metaTitle: "Squirrel Cam for Cats — Cat TV",
-    blurb: "Bushy-tailed acrobats on the fence",
-    summary:
-      "Bushy-tailed squirrels scrambling along the fence and burying nuts in the lawn. Plenty of fast, unpredictable movement to keep a pouncy cat alert and entertained.",
-    body: "Squirrel Capers is pure stimulation for active cats. Squirrels move in sharp, sudden bursts that trigger your cat's natural hunting instincts, making this one of the best videos for play-driven kittens and younger cats. Filmed in natural daylight with soft ambient sound, it's lively without ever being stressful.",
-    durationIso: "PT1H48M",
-    durationLabel: "1h 48m",
-    uploadDate: "2026-06-15",
-  },
-  {
-    slug: "aquarium-cam",
-    videoId: "gOPIkRa2D_E",
-    emoji: "🐠",
-    title: "Aquarium Calm",
-    keyword: "Aquarium video for cats",
-    metaTitle: "Aquarium Video for Cats — Cat TV",
-    blurb: "Slow, dreamy fish for sleepy pets",
-    summary:
-      "Slow, dreamy fish drifting through a planted tank. The gentle, repetitive motion is ideal for winding an over-stimulated or anxious cat down toward a nap.",
-    body: "Aquarium Calm is our most soothing stream. Where the bird and squirrel cams energise, the aquarium settles — the unhurried glide of fish and soft bubbling sound work as a kind of ambient white noise for pets. Many owners leave it running in the evening to help nervous cats relax.",
-    durationIso: "PT4H",
-    durationLabel: "4h 00m",
-    uploadDate: "2026-06-12",
-  },
-  {
-    slug: "mouse-cam",
-    videoId: "gOPIkRa2D_E",
-    emoji: "🐭",
-    title: "Mouse Hideaway",
-    keyword: "Mouse video for cats to watch",
-    metaTitle: "Mouse Video for Cats to Watch — Cat TV",
-    blurb: "Scurrying toys for pouncy cats",
-    summary:
-      "Little scurrying mice darting in and out of cover. Short, fast and irresistible — the closest thing to a hunt your indoor cat can get from the sofa.",
-    body: "Mouse Hideaway taps straight into the chase. The quick, low-to-the-ground movement of mice is one of the strongest triggers for a cat's prey drive, which is why this clip reliably gets even lazy cats up on their paws. It's short by design, perfect for a burst of play before mealtime.",
-    durationIso: "PT52M",
-    durationLabel: "52m",
-    uploadDate: "2026-06-10",
-  },
-  {
-    slug: "rain-cam",
-    videoId: "gOPIkRa2D_E",
-    emoji: "🌧️",
-    title: "Window Rain",
-    keyword: "Calming rain video for anxious pets",
-    metaTitle: "Calming Rain Video for Anxious Pets — Cat TV",
-    blurb: "Cozy drizzle for anxious pups",
-    summary:
-      "Soft drizzle running down a windowpane with gentle grey light. No sudden sounds — just steady, cozy rain to help anxious cats and dogs feel safe.",
-    body: "Window Rain is built for calm rather than play. The constant, predictable sound of rainfall masks the bangs and doorbells that stress pets out, making it a favourite for thunderstorm-anxious dogs and skittish cats. Leave it on during fireworks season or while you're out of the house.",
-    durationIso: "PT2H30M",
-    durationLabel: "2h 30m",
-    uploadDate: "2026-06-08",
-  },
-  {
-    slug: "butterfly-cam",
-    videoId: "gOPIkRa2D_E",
-    emoji: "🦋",
-    title: "Meadow Flutter",
-    keyword: "Butterfly video for cats",
-    metaTitle: "Butterfly Video for Cats — Cat TV",
-    blurb: "Lazy butterflies in tall grass",
-    summary:
-      "Lazy butterflies drifting over tall summer grass and wildflowers. Soft, floating movement that fascinates cats without winding them up.",
-    body: "Meadow Flutter sits between play and calm. Butterflies move slowly enough to soothe but unpredictably enough to hold attention, so cats tend to watch intently rather than pounce. Filmed on a still summer afternoon, it's a gentle, colourful stream that works well as daytime background for indoor pets.",
-    durationIso: "PT1H5M",
-    durationLabel: "1h 05m",
-    uploadDate: "2026-06-05",
-  },
-];
+const REVALIDATE_CATALOGUE = 3600; // 1h
+const REVALIDATE_LIVE = 300; // 5m — a new stream should surface promptly
 
-/** The stream featured on the homepage (in production: today's row from Postgres). */
-export const featuredVideo = videos[0];
+// Default published-video target length when the DB stores 0 (minutes).
+const DEFAULT_DURATION_MINUTES = 600;
 
-export function getVideo(slug: string): Video | undefined {
+// --- mapping helpers --------------------------------------------------------
+
+function slugify(input: string): string {
+  return input
+    .toLowerCase()
+    .normalize("NFKD")
+    .replace(/[^\w\s-]/g, "")
+    .trim()
+    .replace(/[\s_]+/g, "-")
+    .replace(/-+/g, "-");
+}
+
+/** Assign a unique slug, suffixing collisions deterministically (-2, -3, …). */
+function uniqueSlug(title: string, seen: Set<string>): string {
+  const base = slugify(title) || "video";
+  let slug = base;
+  let n = 2;
+  while (seen.has(slug)) {
+    slug = `${base}-${n++}`;
+  }
+  seen.add(slug);
+  return slug;
+}
+
+function durationFromMinutes(minutes: number): { durationIso: string; durationLabel: string } {
+  const m = minutes && minutes > 0 ? minutes : DEFAULT_DURATION_MINUTES;
+  const h = Math.floor(m / 60);
+  const rem = m % 60;
+  const durationIso = `PT${h ? `${h}H` : ""}${rem ? `${rem}M` : ""}` || "PT0M";
+  const durationLabel = h ? `${h}h ${String(rem).padStart(2, "0")}m` : `${rem}m`;
+  return { durationIso, durationLabel };
+}
+
+function toBlurb(description: string): string {
+  const first = description.split(/(?<=[.!?])\s/)[0] ?? description;
+  return first.length > 90 ? `${first.slice(0, 87).trimEnd()}…` : first;
+}
+
+function toIsoDate(value: Date | string | null): string {
+  if (!value) return "";
+  return (value instanceof Date ? value : new Date(value)).toISOString().slice(0, 10);
+}
+
+interface ProjectRow {
+  title: string;
+  description: string | null;
+  tags: string[] | null;
+}
+
+/** Build the shared, SEO-derivable fields from a projects row. */
+function buildBase(row: ProjectRow): Omit<Video, "slug" | "videoId" | "durationIso" | "durationLabel" | "uploadDate" | "views"> {
+  const title = row.title ?? "";
+  const description = row.description ?? "";
+  return {
+    title,
+    tags: row.tags ?? [],
+    // SEO fields fall back to title/description until dedicated DB columns land.
+    keyword: title,
+    metaTitle: `${title} — ${SITE.name}`,
+    blurb: toBlurb(description),
+    summary: description,
+    body: "",
+  };
+}
+
+// --- catalogue (published videos) -------------------------------------------
+
+interface PublishedRow extends ProjectRow {
+  video_id: string;
+  duration_minutes: number | null;
+  published_at: Date | string | null;
+  views: number | null;
+}
+
+const loadCatalogue = unstable_cache(
+  async (schema: string): Promise<Video[]> => {
+    const rows = await query<PublishedRow>(
+      // `published_videos_all` exposes a derived `is_public` flag that also covers
+      // unlisted/private edge cases, so we join back to the base table to filter on
+      // the authoritative `privacy_status` instead.
+      `SELECT pv.id            AS video_id,
+              pv.duration_minutes,
+              pv.published_at,
+              p.title,
+              p.description,
+              p.tags,
+              a.views
+       FROM   "${schema}".published_videos_all pv
+       JOIN   public.published_videos base ON base.id = pv.id
+       JOIN   public.projects p ON p.id = pv.project_id
+       LEFT JOIN public.published_video_analytics a ON a.published_video_id = pv.id
+       WHERE  base.privacy_status = 'public'
+       ORDER BY pv.published_at DESC NULLS LAST`,
+    );
+
+    const seen = new Set<string>();
+    return rows.map((row) => ({
+      ...buildBase(row),
+      slug: uniqueSlug(row.title ?? "", seen),
+      videoId: (row.video_id ?? "").trim(), // `id` is CHAR(n) — strip padding
+      ...durationFromMinutes(row.duration_minutes ?? 0),
+      uploadDate: toIsoDate(row.published_at),
+      views: row.views ?? 0,
+    }));
+  },
+  ["catalogue"],
+  { tags: ["videos"], revalidate: REVALIDATE_CATALOGUE },
+);
+
+/** All published videos for the active channel, newest first. */
+export function getVideos(): Promise<Video[]> {
+  return loadCatalogue(getChannelSchema());
+}
+
+/** Published videos for the active channel, most-viewed first. */
+export async function getPopularVideos(limit?: number): Promise<Video[]> {
+  const videos = await getVideos();
+  const popular = [...videos].sort((a, b) => b.views - a.views);
+  return limit ? popular.slice(0, limit) : popular;
+}
+
+/** A single published video by slug, or undefined. */
+export async function getVideo(slug: string): Promise<Video | undefined> {
+  const videos = await getVideos();
   return videos.find((v) => v.slug === slug);
 }
 
-export const introParagraphs = [
-  "Cat TV is simple: real footage of birds, squirrels and fish that taps straight into your pet's natural curiosity. The gentle movement and soft sounds give indoor cats a window onto the outside world — and a healthy outlet for all that watching, chattering and pouncing energy.",
-  "Every stream is hand-picked to be calm and cat-friendly: no sudden noises, no flashing, just hours of relaxing nature. It's brought to you by Patsy's Garden, where we film the feeders all year round so there's always something new to watch.",
-];
+/** Up to `limit` videos sharing the most tags with `video`. */
+export async function getRelated(video: Video, limit = 3): Promise<Video[]> {
+  const videos = await getVideos();
+  return videos
+    .filter((v) => v.slug !== video.slug)
+    .map((v) => ({ v, overlap: v.tags.filter((t) => video.tags.includes(t)).length }))
+    .sort((a, b) => b.overlap - a.overlap)
+    .slice(0, limit)
+    .map(({ v }) => v);
+}
+
+// --- homepage hero (latest active stream) -----------------------------------
+
+interface StreamRow extends ProjectRow {
+  video_id: string;
+  duration_hours: number | null;
+  started_at: Date | string | null;
+}
+
+const loadLiveStream = unstable_cache(
+  async (schema: string): Promise<Video | null> => {
+    const rows = await query<StreamRow>(
+      `SELECT s.youtube_id     AS video_id,
+              s.duration_hours,
+              s.started_at,
+              p.title,
+              p.description,
+              p.tags
+       FROM   "${schema}".streams_active s
+       JOIN   public.projects p ON p.id = s.project_id
+       WHERE  s.is_held = false AND s.did_fail = false AND s.ended_at IS NULL
+       ORDER BY s.started_at DESC
+       LIMIT 1`,
+    );
+    const row = rows[0];
+    if (!row) return null;
+    return {
+      ...buildBase(row),
+      slug: slugify(row.title ?? "") || "live",
+      videoId: (row.video_id ?? "").trim(),
+      ...durationFromMinutes(Math.round((row.duration_hours ?? 0) * 60)),
+      uploadDate: toIsoDate(row.started_at),
+      views: 0,
+    };
+  },
+  ["live-stream"],
+  { tags: ["videos"], revalidate: REVALIDATE_LIVE },
+);
+
+/**
+ * The video for the homepage hero: the latest active stream, falling back to the
+ * most recently published video when nothing is live.
+ */
+export async function getFeaturedVideo(): Promise<Video | undefined> {
+  const live = await loadLiveStream(getChannelSchema());
+  if (live) return live;
+  const videos = await getVideos();
+  return videos[0];
+}

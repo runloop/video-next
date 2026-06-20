@@ -19,8 +19,8 @@ export default function SiteHeader() {
           <Link href="/themes" className="hover:text-[#1f2a24]">
             Themes
           </Link>
-          <Link href="/streams" className="rounded-lg bg-[#2e9e6b] px-4 py-2 text-white hover:bg-[#268a5d]">
-            Streaming
+          <Link href={`/${SITE.streamsSlug}`} className="rounded-lg bg-[#dc2626] px-4 py-2 text-white hover:bg-[#b91c1c]">
+            {SITE.streamsLabel}
           </Link>
         </nav>
       </div>

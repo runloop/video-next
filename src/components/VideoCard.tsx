@@ -1,7 +1,19 @@
 import Link from "next/link";
 import type { Video } from "@/lib/videos";
 
-export default function VideoCard({ video, href }: { video: Video; href?: string }) {
+export default function VideoCard({
+  video,
+  href,
+  metaLabel,
+  live,
+}: {
+  video: Video;
+  href?: string;
+  /** Overrides the small caption under the title (defaults to the duration). */
+  metaLabel?: string;
+  /** Marks a live stream: prefixes the title with a red circle. */
+  live?: boolean;
+}) {
   const target = href ?? `/watch/${video.slug}`;
   const external = target.startsWith("http");
   return (
@@ -17,9 +29,12 @@ export default function VideoCard({ video, href }: { video: Video; href?: string
         className="aspect-video w-full object-cover"
       />
       <div className="p-4">
-        <h3 className="font-display font-bold leading-tight">{video.title}</h3>
+        <h3 className="font-display font-bold leading-tight">
+          {live && "🔴 "}
+          {video.title}
+        </h3>
         <p className="text-sm text-[#5c6b62]">{video.blurb}</p>
-        <p className="mt-1 text-xs font-semibold text-[#9aa8a0]">{video.durationLabel}</p>
+        <p className="mt-1 text-xs font-semibold text-[#9aa8a0]">{metaLabel ?? video.durationLabel}</p>
       </div>
     </Link>
   );

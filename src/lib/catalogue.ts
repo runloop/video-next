@@ -206,3 +206,26 @@ export function relatedTo(videos: Video[], video: Video, limit = 3): Video[] {
 export function featured(streams: Video[], videos: Video[]): Video | undefined {
   return streams[0] ?? videos[0];
 }
+
+/**
+ * A coarse "time since" label for an ISO date (YYYY-MM-DD) that scales with the
+ * gap: "today", "yesterday", "4 days ago", "3 weeks ago", "5 months ago",
+ * "2 years ago". Both dates are floored to the UTC day; `now` is passed in so the
+ * function stays pure and testable.
+ */
+export function relativeDay(isoDate: string, now: Date): string {
+  if (!isoDate) return "";
+  const DAY_MS = 86_400_000;
+  const start = Date.parse(`${isoDate}T00:00:00Z`);
+  if (Number.isNaN(start)) return "";
+  const today = Date.parse(`${now.toISOString().slice(0, 10)}T00:00:00Z`);
+  const days = Math.round((today - start) / DAY_MS);
+  if (days <= 0) return "today";
+  if (days === 1) return "yesterday";
+
+  const ago = (n: number, unit: string) => `${n} ${unit}${n === 1 ? "" : "s"} ago`;
+  if (days < 7) return ago(days, "day");
+  if (days < 30) return ago(Math.round(days / 7), "week");
+  if (days < 365) return ago(Math.round(days / 30), "month");
+  return ago(Math.round(days / 365), "year");
+}

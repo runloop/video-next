@@ -43,6 +43,14 @@ export interface ChannelBranding {
   youtube: string;
   /** Small wordmark in the header. */
   headerLabel: string;
+  /** Header CTA label for the 24/7 stream page, e.g. "24/7 Dog TV". */
+  streamsLabel: string;
+  /**
+   * URL slug for the 24/7 stream page, e.g. "24-7-dog-tv". Channel-relevant: a
+   * next.config rewrite maps "/<streamsSlug>" to the shared /streams route for the
+   * active deployment, so each channel gets its own URL.
+   */
+  streamsSlug: string;
   /** "Made with 🐾 by …" credit in the footer. */
   footerBy: string;
   /** Heading above the long-form intro on the homepage. */
@@ -53,7 +61,7 @@ export interface ChannelBranding {
   categories: Category[];
 }
 
-const CHANNELS: Record<string, ChannelBranding> = {
+export const CHANNELS: Record<string, ChannelBranding> = {
   patsysgarden: {
     schema: "patsysgarden",
     name: "Cat TV for Cats",
@@ -63,6 +71,8 @@ const CHANNELS: Record<string, ChannelBranding> = {
       "A fresh, calming daily stream of birds, squirrels and fish — hand-picked to keep indoor cats happily watching for hours.",
     youtube: "https://www.youtube.com/@patsysgarden",
     headerLabel: "🐾 Cat TV",
+    streamsLabel: "24/7 Cat TV",
+    streamsSlug: "24-7-cat-tv",
     footerBy: "Patsy's Garden",
     aboutHeading: "Why pets love cat TV",
     introParagraphs: [
@@ -164,6 +174,8 @@ const CHANNELS: Record<string, ChannelBranding> = {
       "Hours of relaxing virtual dog walks through ancient woodland and bluebell forests — gentle, steady footage made to keep dogs calm and settled at home.",
     youtube: "https://www.youtube.com/@harmonyhoundsdogtv",
     headerLabel: "🐾 Dog TV",
+    streamsLabel: "24/7 Dog TV",
+    streamsSlug: "24-7-dog-tv",
     footerBy: "Harmony Hounds",
     aboutHeading: "Why pets love dog TV",
     introParagraphs: [

@@ -9,6 +9,7 @@ import {
   byTag,
   relatedTo,
   featured,
+  relativeDay,
   type PublishedRow,
   type StreamRow,
   type Video,
@@ -196,5 +197,37 @@ describe("featured", () => {
 
   test("is undefined when there is nothing at all", () => {
     expect(featured([], [])).toBeUndefined();
+  });
+});
+
+describe("relativeDay", () => {
+  const now = new Date("2026-06-20T12:00:00Z");
+
+  test("same day is 'today'", () => {
+    expect(relativeDay("2026-06-20", now)).toBe("today");
+  });
+
+  test("one day is 'yesterday'", () => {
+    expect(relativeDay("2026-06-19", now)).toBe("yesterday");
+  });
+
+  test("a few days reads in days", () => {
+    expect(relativeDay("2026-06-16", now)).toBe("4 days ago");
+  });
+
+  test("scales to weeks, months and years", () => {
+    expect(relativeDay("2026-06-01", now)).toBe("3 weeks ago"); // 19 days
+    expect(relativeDay("2026-03-22", now)).toBe("3 months ago"); // 90 days
+    expect(relativeDay("2024-06-20", now)).toBe("2 years ago"); // 730 days
+  });
+
+  test("singular units drop the 's'", () => {
+    expect(relativeDay("2026-06-12", now)).toBe("1 week ago"); // 8 days
+    expect(relativeDay("2026-05-19", now)).toBe("1 month ago"); // 32 days
+  });
+
+  test("future dates and blanks are safe", () => {
+    expect(relativeDay("2026-07-01", now)).toBe("today");
+    expect(relativeDay("", now)).toBe("");
   });
 });

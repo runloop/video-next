@@ -15,6 +15,9 @@ export default function SiteHeader() {
           <Link href="/videos" className="hover:text-[#1f2a24]">
             All videos
           </Link>
+          <Link href="/themes" className="hover:text-[#1f2a24]">
+            Themes
+          </Link>
           <Link href="/" className="rounded-lg bg-[#2e9e6b] px-4 py-2 text-white hover:bg-[#268a5d]">
             Watch live
           </Link>

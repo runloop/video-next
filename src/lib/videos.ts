@@ -9,7 +9,7 @@
 // (revalidateTag('videos')) refreshes everything without a redeploy.
 import { unstable_cache } from "next/cache";
 import { query } from "./db";
-import { getChannelSchema } from "./channel";
+import { getChannelSchema, type Category } from "./channel";
 import { SITE } from "./site";
 
 export interface Video {
@@ -172,6 +172,28 @@ export async function getPopularVideos(limit?: number): Promise<Video[]> {
 export async function getVideo(slug: string): Promise<Video | undefined> {
   const videos = await getVideos();
   return videos.find((v) => v.slug === slug);
+}
+
+/**
+ * Minimum number of videos a theme needs before it's worth indexing. Below this,
+ * the page is too thin to rank and risks reading as doorway/thin content, so it's
+ * kept for on-site navigation only (noindex). See ThemePage's generateMetadata.
+ */
+export const MIN_INDEXABLE_VIDEOS = 4;
+
+/** Whether a theme page should be indexed: opted in AND has enough videos. */
+export async function isCategoryIndexable(category: Category): Promise<boolean> {
+  if (category.index === false) return false;
+  const videos = await getVideosByTag(category.tags);
+  return videos.length >= MIN_INDEXABLE_VIDEOS;
+}
+
+/** Published videos tagged with any of `tags` (case-insensitive), newest first. */
+export async function getVideosByTag(tags: string[]): Promise<Video[]> {
+  const wanted = new Set(tags.map((t) => t.trim().toLowerCase()));
+  if (wanted.size === 0) return [];
+  const videos = await getVideos();
+  return videos.filter((v) => v.tags.some((t) => wanted.has(t.trim().toLowerCase())));
 }
 
 /** Up to `limit` videos sharing the most tags with `video`. */

@@ -40,7 +40,7 @@ export default async function Home() {
           </div>
           <div>
             <span className="inline-flex items-center gap-1.5 rounded-full bg-[#e7f6ee] px-3 py-1 text-sm font-bold text-[#2e9e6b]">
-              <span className="h-2 w-2 rounded-full bg-[#2e9e6b] animate-pulse" /> Live now
+              <span className="h-2 w-2 rounded-full bg-[#2e9e6b] animate-pulse" /> Streaming now
             </span>
             <h1 className="mt-3 font-display text-4xl font-bold leading-[1.1]">{v.keyword}</h1>
             <p className="mt-4 text-lg leading-relaxed text-[#3f4d45]">{v.summary}</p>

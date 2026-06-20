@@ -215,8 +215,8 @@ interface StreamRow extends ProjectRow {
   started_at: Date | string | null;
 }
 
-const loadLiveStream = unstable_cache(
-  async (schema: string): Promise<Video | null> => {
+const loadLiveStreams = unstable_cache(
+  async (schema: string): Promise<Video[]> => {
     const rows = await query<StreamRow>(
       `SELECT s.youtube_id     AS video_id,
               s.duration_hours,
@@ -227,31 +227,34 @@ const loadLiveStream = unstable_cache(
        FROM   "${schema}".streams_active s
        JOIN   public.projects p ON p.id = s.project_id
        WHERE  s.is_held = false AND s.did_fail = false AND s.ended_at IS NULL
-       ORDER BY s.started_at DESC
-       LIMIT 1`,
+       ORDER BY s.started_at DESC`,
     );
-    const row = rows[0];
-    if (!row) return null;
-    return {
+    const seen = new Set<string>();
+    return rows.map((row) => ({
       ...buildBase(row),
-      slug: slugify(row.title ?? "") || "live",
+      slug: uniqueSlug(row.title ?? "live", seen),
       videoId: (row.video_id ?? "").trim(),
       ...durationFromMinutes(Math.round((row.duration_hours ?? 0) * 60)),
       uploadDate: toIsoDate(row.started_at),
       views: 0,
-    };
+    }));
   },
-  ["live-stream"],
+  ["live-streams"],
   { tags: ["videos"], revalidate: REVALIDATE_LIVE },
 );
+
+/** All currently-active streams for the channel, newest first. */
+export function getLiveStreams(): Promise<Video[]> {
+  return loadLiveStreams(getChannelSchema());
+}
 
 /**
  * The video for the homepage hero: the latest active stream, falling back to the
  * most recently published video when nothing is live.
  */
 export async function getFeaturedVideo(): Promise<Video | undefined> {
-  const live = await loadLiveStream(getChannelSchema());
-  if (live) return live;
+  const live = await getLiveStreams();
+  if (live.length > 0) return live[0];
   const videos = await getVideos();
   return videos[0];
 }

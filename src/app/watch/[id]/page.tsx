@@ -7,6 +7,7 @@ import VideoEmbed from "@/components/VideoEmbed";
 import VideoCard from "@/components/VideoCard";
 import VideoSchema from "@/components/VideoSchema";
 import { getVideo, getVideos, getRelated } from "@/lib/videos";
+import { getCategoriesForTags } from "@/lib/channel";
 
 export const revalidate = 3600;
 
@@ -47,12 +48,13 @@ export default async function WatchPage({
   if (!v) notFound();
 
   const others = await getRelated(v, 3);
+  const themes = getCategoriesForTags(v.tags);
 
   return (
     <div className="flex min-h-screen flex-col bg-white text-[#1f2a24] font-body">
       <SiteHeader />
 
-      <article className="mx-auto w-full max-w-4xl px-6 py-8">
+      <article className="mx-auto w-full max-w-6xl px-6 py-8">
         <nav className="mb-4 text-sm font-semibold text-[#5c6b62]">
           <Link href="/" className="hover:text-[#1f2a24]">
             Home
@@ -72,9 +74,24 @@ export default async function WatchPage({
         </div>
 
         {v.summary && (
-          <p className="mt-5 text-lg leading-relaxed text-[#3f4d45]">{v.summary}</p>
+          <p className="mt-5 max-w-3xl text-lg leading-relaxed text-[#3f4d45]">{v.summary}</p>
         )}
-        {v.body && <p className="mt-4 text-lg leading-relaxed text-[#3f4d45]">{v.body}</p>}
+        {v.body && <p className="mt-4 max-w-3xl text-lg leading-relaxed text-[#3f4d45]">{v.body}</p>}
+
+        {themes.length > 0 && (
+          <div className="mt-6 flex flex-wrap items-center gap-2 text-sm">
+            <span className="font-semibold text-[#5c6b62]">Themes:</span>
+            {themes.map((t) => (
+              <Link
+                key={t.slug}
+                href={`/themes/${t.slug}`}
+                className="rounded-lg bg-[#f3f7f4] px-3 py-1.5 font-semibold text-[#2e9e6b] hover:bg-[#e6ede8]"
+              >
+                {t.title}
+              </Link>
+            ))}
+          </div>
+        )}
       </article>
 
       <section className="border-t border-[#e6ede8] bg-[#fafcfb]">

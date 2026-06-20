@@ -5,7 +5,7 @@ import VideoEmbed from "@/components/VideoEmbed";
 import VideoCard from "@/components/VideoCard";
 import VideoSchema from "@/components/VideoSchema";
 import { getFeaturedVideo, getPopularVideos } from "@/lib/videos";
-import { introParagraphs } from "@/lib/site";
+import { SITE, introParagraphs } from "@/lib/site";
 
 export const metadata: Metadata = {
   alternates: { canonical: "/" },
@@ -68,7 +68,7 @@ export default async function Home() {
 
       {/* Long-form intro */}
       <section id="about" className="mx-auto w-full max-w-3xl scroll-mt-20 px-6 py-12">
-        <h2 className="font-display text-3xl font-bold">Why pets love cat TV</h2>
+        <h2 className="font-display text-3xl font-bold">{SITE.aboutHeading}</h2>
         <div className="mt-4 flex flex-col gap-4 text-lg leading-relaxed text-[#3f4d45]">
           {introParagraphs.map((p, i) => (
             <p key={i}>{p}</p>

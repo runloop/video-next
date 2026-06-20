@@ -20,6 +20,8 @@ export interface ChannelBranding {
   headerLabel: string;
   /** "Made with 🐾 by …" credit in the footer. */
   footerBy: string;
+  /** Heading above the long-form intro on the homepage. */
+  aboutHeading: string;
   /** Long-form indexable copy on the homepage. */
   introParagraphs: string[];
 }
@@ -35,9 +37,26 @@ const CHANNELS: Record<string, ChannelBranding> = {
     youtube: "https://www.youtube.com/@patsysgarden",
     headerLabel: "🐾 Cat TV",
     footerBy: "Patsy's Garden",
+    aboutHeading: "Why pets love cat TV",
     introParagraphs: [
       "Cat TV is simple: real footage of birds, squirrels and fish that taps straight into your pet's natural curiosity. The gentle movement and soft sounds give indoor cats a window onto the outside world — and a healthy outlet for all that watching, chattering and pouncing energy.",
       "Every stream is hand-picked to be calm and cat-friendly: no sudden noises, no flashing, just hours of relaxing nature. It's brought to you by Patsy's Garden, where we film the feeders all year round so there's always something new to watch.",
+    ],
+  },
+  harmonyhoundsdogtv: {
+    schema: "harmonyhoundsdogtv",
+    name: "Dog TV for Dogs",
+    url: "https://www.dogtvfordogs.com",
+    tagline: "Calming virtual dog walks through the woods",
+    description:
+      "Hours of relaxing virtual dog walks through ancient woodland and bluebell forests — gentle, steady footage made to keep dogs calm and settled at home.",
+    youtube: "https://www.youtube.com/@harmonyhoundsdogtv",
+    headerLabel: "🐾 Dog TV",
+    footerBy: "Harmony Hounds",
+    aboutHeading: "Why pets love dog TV",
+    introParagraphs: [
+      "Dog TV is simple: long, steady walks through real woodland — bluebell woods, ancient forest and quiet country paths — filmed at a dog's pace. The gentle motion and soft natural sound help anxious and home-alone dogs settle, giving them a calm window onto the outside world.",
+      "Every walk is hand-picked to be calm and dog-friendly: no sudden noises, no flashing, just hours of relaxing nature. It's brought to you by Harmony Hounds, filming peaceful trails through the seasons so there's always a new walk to share.",
     ],
   },
 };

@@ -43,32 +43,63 @@ export interface ChannelBranding {
   youtube: string;
   /** Small wordmark in the header. */
   headerLabel: string;
+  /** Header CTA label for the 24/7 stream page, e.g. "24/7 Dog TV". */
+  streamsLabel: string;
+  /**
+   * URL slug for the 24/7 stream page, e.g. "24-7-dog-tv". Channel-relevant: a
+   * next.config rewrite maps "/<streamsSlug>" to the shared /streams route for the
+   * active deployment, so each channel gets its own URL.
+   */
+  streamsSlug: string;
   /** "Made with 🐾 by …" credit in the footer. */
   footerBy: string;
   /** Heading above the long-form intro on the homepage. */
   aboutHeading: string;
   /** Long-form indexable copy on the homepage. */
   introParagraphs: string[];
+  /**
+   * A natural-language cross-promo to the sibling channel, shown after the intro.
+   * Split around an inline link and phrased differently per site so the two pages
+   * don't read as duplicate content.
+   */
+  crossPromo: {
+    /** Sibling site URL. */
+    href: string;
+    /** Sentence text before the inline link. */
+    before: string;
+    /** The linked text (the sibling brand). */
+    linkText: string;
+    /** Sentence text after the link. */
+    after: string;
+  };
   /** Curated theme pages. The `tags` values must match real catalogue tags. */
   categories: Category[];
 }
 
-const CHANNELS: Record<string, ChannelBranding> = {
+export const CHANNELS: Record<string, ChannelBranding> = {
   patsysgarden: {
     schema: "patsysgarden",
     name: "Cat TV for Cats",
     url: "https://www.cattvforcats.com",
-    tagline: "Live bird & squirrel cam for cats",
+    tagline: "Calming bird & squirrel videos for cats",
     description:
       "A fresh, calming daily stream of birds, squirrels and fish — hand-picked to keep indoor cats happily watching for hours.",
     youtube: "https://www.youtube.com/@patsysgarden",
     headerLabel: "🐾 Cat TV",
+    streamsLabel: "24/7 Cat TV",
+    streamsSlug: "24-7-cat-tv",
     footerBy: "Patsy's Garden",
     aboutHeading: "Why pets love cat TV",
     introParagraphs: [
       "Cat TV is simple: real footage of birds, squirrels and fish that taps straight into your pet's natural curiosity. The gentle movement and soft sounds give indoor cats a window onto the outside world — and a healthy outlet for all that watching, chattering and pouncing energy.",
       "Every stream is hand-picked to be calm and cat-friendly: no sudden noises, no flashing, just hours of relaxing nature. It's brought to you by Patsy's Garden, where we film the feeders all year round so there's always something new to watch.",
     ],
+    crossPromo: {
+      href: "https://www.dogtvfordogs.com",
+      before: "Share your home with a dog as well? Treat them to ",
+      linkText: "Dog TV for Dogs",
+      after: " — hours of calming woodland walks filmed to settle restless, home-alone pups.",
+    },
     categories: [
       {
         slug: "bird-tables",
@@ -164,12 +195,20 @@ const CHANNELS: Record<string, ChannelBranding> = {
       "Hours of relaxing virtual dog walks through ancient woodland and bluebell forests — gentle, steady footage made to keep dogs calm and settled at home.",
     youtube: "https://www.youtube.com/@harmonyhoundsdogtv",
     headerLabel: "🐾 Dog TV",
+    streamsLabel: "24/7 Dog TV",
+    streamsSlug: "24-7-dog-tv",
     footerBy: "Harmony Hounds",
     aboutHeading: "Why pets love dog TV",
     introParagraphs: [
       "Dog TV is simple: long, steady walks through real woodland — bluebell woods, ancient forest and quiet country paths — filmed at a dog's pace. The gentle motion and soft natural sound help anxious and home-alone dogs settle, giving them a calm window onto the outside world.",
       "Every walk is hand-picked to be calm and dog-friendly: no sudden noises, no flashing, just hours of relaxing nature. It's brought to you by Harmony Hounds, filming peaceful trails through the seasons so there's always a new walk to share.",
     ],
+    crossPromo: {
+      href: "https://www.cattvforcats.com",
+      before: "Got a cat in the house too? They'll happily settle in front of ",
+      linkText: "Cat TV for Cats",
+      after: " — relaxing bird and squirrel footage made to keep curious cats watching for hours.",
+    },
     categories: [
       {
         slug: "woodland-walks",

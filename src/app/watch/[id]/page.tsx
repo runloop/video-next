@@ -88,7 +88,7 @@ export default async function WatchPage({
               <Link
                 key={t.slug}
                 href={`/themes/${t.slug}`}
-                className="rounded-lg bg-[#f3f7f4] px-3 py-1.5 font-semibold text-[#2e9e6b] hover:bg-[#e6ede8]"
+                className="rounded-lg bg-[#f3f7f4] px-3 py-1.5 font-semibold text-accent hover:bg-[#e6ede8]"
               >
                 {t.title}
               </Link>
@@ -101,7 +101,7 @@ export default async function WatchPage({
         <div className="mx-auto max-w-6xl px-6 py-10">
           <div className="mb-6 flex items-end justify-between">
             <h2 className="font-display text-2xl font-bold">More videos for your pet</h2>
-            <Link href="/videos" className="text-sm font-bold text-[#2e9e6b] hover:underline">
+            <Link href="/videos" className="text-sm font-bold text-accent hover:underline">
               See all →
             </Link>
           </div>

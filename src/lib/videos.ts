@@ -104,14 +104,20 @@ export async function getRelated(video: Video, limit = 3): Promise<Video[]> {
 const loadLiveStreams = unstable_cache(
   async (schema: string): Promise<Video[]> => {
     const rows = await query<StreamRow>(
+      // stream_analytics.stream_id is the numeric FK to streams.id (exposed by
+      // streams_active as `id`). LEFT JOIN so a stream with no analytics row yet
+      // still renders (views falls back to 0).
       `SELECT s.youtube_id     AS video_id,
               s.duration_hours,
               s.started_at,
+              s.live_viewers,
+              sa.views,
               p.title,
               p.description,
               p.tags
        FROM   "${schema}".streams_active s
        JOIN   public.projects p ON p.id = s.project_id
+       LEFT JOIN public.stream_analytics sa ON sa.stream_id = s.id
        WHERE  s.is_held = false AND s.did_fail = false AND s.ended_at IS NULL
        ORDER BY s.started_at DESC`,
     );
@@ -124,6 +130,12 @@ const loadLiveStreams = unstable_cache(
 /** All currently-active streams for the channel, newest first. */
 export function getLiveStreams(): Promise<Video[]> {
   return loadLiveStreams(getChannelSchema());
+}
+
+/** A single active stream by slug, or undefined once it has ended. */
+export async function getStream(slug: string): Promise<Video | undefined> {
+  const streams = await getLiveStreams();
+  return streams.find((s) => s.slug === slug);
 }
 
 /**

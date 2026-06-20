@@ -74,6 +74,13 @@ export default async function Home() {
           {SITE.introParagraphs.map((p, i) => (
             <p key={i}>{p}</p>
           ))}
+          <p>
+            {SITE.crossPromo.before}
+            <a href={SITE.crossPromo.href} className="font-semibold text-accent hover:underline">
+              {SITE.crossPromo.linkText}
+            </a>
+            {SITE.crossPromo.after}
+          </p>
         </div>
       </section>
 

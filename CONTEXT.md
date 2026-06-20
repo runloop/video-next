@@ -23,8 +23,10 @@ distinct from the raw DB **row** it is built from.
 _Avoid_: clip, item.
 
 **Stream** (active stream):
-A currently-live YouTube stream for the channel (`streams_active`, not held/failed/ended).
-_Avoid_: live video, broadcast.
+A continuously-running YouTube stream for the channel (`streams_active`, not
+held/failed/ended). It is delivered as a YouTube *live* broadcast, but the footage
+is always **pre-recorded and edited** — nothing is ever captured in real time.
+_Avoid_: calling the content "live" in any user-facing copy; "broadcast".
 
 **Featured video**:
 The homepage hero selection: the latest active **stream**, falling back to the latest
@@ -43,6 +45,15 @@ _Avoid_: tag page, category (in prose — reserve "Category" for the type name).
 - **Catalogue vs streams**: both yield **Videos**, but from different sources
   (`published_videos_all` vs `streams_active`) with different freshness windows. "The
   catalogue" never includes active streams.
+- **"Live"**: never say it in user-facing copy. The content is pre-recorded and
+  edited, then put out on a 24/7 YouTube live *stream*. "Streaming", "watching",
+  "24/7", "now playing" are all fine; "live" implies real-time capture and is wrong.
+  (Code identifiers like `getLiveStreams`/`liveViewers` refer to the live-stream
+  delivery mechanism and are accurate — this rule is about copy shown to users.)
+- **Not a "cam"**: the footage is a short repeating loop (~40 min), with no
+  day/night cycle. So also avoid "cam", "round-the-clock", "continuous" or anything
+  implying an always-on real camera. It's *videos* / *footage*, not a live feed. The
+  *stream* being on 24/7 is fine to say; the *footage* being continuous is not.
 
 ## Example dialogue
 

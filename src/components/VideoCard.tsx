@@ -1,10 +1,13 @@
 import Link from "next/link";
 import type { Video } from "@/lib/videos";
 
-export default function VideoCard({ video }: { video: Video }) {
+export default function VideoCard({ video, href }: { video: Video; href?: string }) {
+  const target = href ?? `/watch/${video.slug}`;
+  const external = target.startsWith("http");
   return (
     <Link
-      href={`/watch/${video.slug}`}
+      href={target}
+      {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
       className="group overflow-hidden rounded-xl border border-[#e6ede8] bg-white transition hover:border-[#2e9e6b] hover:shadow-sm"
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}

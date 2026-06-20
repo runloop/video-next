@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
-import VideoEmbed from "@/components/VideoEmbed";
+import VideoCard from "@/components/VideoCard";
 import { getLiveStreams } from "@/lib/videos";
 import { SITE } from "@/lib/site";
 
@@ -27,18 +27,9 @@ export default async function StreamsPage() {
         {streams.length === 0 ? (
           <p className="mt-6 text-[#5c6b62]">Nothing streaming right now — check back soon.</p>
         ) : (
-          <div className="mt-8 grid gap-8 lg:grid-cols-2">
+          <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {streams.map((s) => (
-              <div key={s.slug}>
-                <div className="aspect-video overflow-hidden rounded-2xl bg-black shadow-lg">
-                  <VideoEmbed videoId={s.videoId} title={s.keyword} />
-                </div>
-                <span className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-[#e7f6ee] px-3 py-1 text-sm font-bold text-[#2e9e6b]">
-                  <span className="h-2 w-2 rounded-full bg-[#2e9e6b] animate-pulse" /> Streaming now
-                </span>
-                <h2 className="mt-2 font-display text-xl font-bold leading-tight">{s.title}</h2>
-                {s.blurb && <p className="mt-1 text-[#5c6b62]">{s.blurb}</p>}
-              </div>
+              <VideoCard key={s.slug} video={s} href={`https://www.youtube.com/watch?v=${s.videoId}`} />
             ))}
           </div>
         )}

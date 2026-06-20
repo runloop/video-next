@@ -1,8 +1,12 @@
 import type { MetadataRoute } from "next";
 import { SITE } from "@/lib/site";
-import { videos } from "@/lib/videos";
+import { getVideos } from "@/lib/videos";
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export const revalidate = 3600;
+
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const videos = await getVideos();
+
   // Featured stream changes daily, so the homepage gets today's date.
   const today = new Date();
 
@@ -15,7 +19,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     },
     ...videos.map((v) => ({
       url: `${SITE.url}/watch/${v.slug}`,
-      lastModified: new Date(v.uploadDate),
+      lastModified: v.uploadDate ? new Date(v.uploadDate) : today,
       changeFrequency: "weekly" as const,
       priority: 0.8,
     })),

@@ -7,7 +7,7 @@ export default function SiteFooter() {
         <a href={SITE.youtube} className="font-semibold hover:text-[#1f2a24]">
           YouTube channel
         </a>{" "}
-        · Made with 🐾 by Patsy&apos;s Garden
+        · Made with 🐾 by {SITE.footerBy}
       </div>
     </footer>
   );

@@ -68,6 +68,23 @@ export interface ChannelBranding {
   /** Long-form indexable copy on the homepage. */
   introParagraphs: string[];
   /**
+   * Short, indexable assurances about how the videos play, shown on the homepage and
+   * every watch page. These address the strong "no ads" / "no AI" search intent —
+   * but they must stay truthful. The videos are embedded from YouTube, which still
+   * serves a pre-roll ad before playback, so we never claim "no ads" / "ad-free".
+   * Instead each truth is stated distinctly:
+   *   - `playback`: what's true once the video is running (no mid-roll breaks).
+   *   - `page`: what's true of the page itself (no pop-ups or banner ads).
+   *   - `footage` (optional): the genuine-footage assurance — real, never AI-generated
+   *     (dog channel only, addressing "dog tv no ai").
+   * Keep each to a single short sentence so they read as facts, not promises.
+   */
+  viewingNotes: {
+    playback: string;
+    page: string;
+    footage?: string;
+  };
+  /**
    * A natural-language cross-promo to the sibling channel, shown after the intro.
    * Split around an inline link and phrased differently per site so the two pages
    * don't read as duplicate content.
@@ -107,6 +124,11 @@ export const CHANNELS: Record<string, ChannelBranding> = {
       "Cat TV is simple: real videos of birds and squirrels that tap straight into your cat's hunting instinct. Squirrels pouncing and birds flapping about give indoor cats something to stalk, chatter at and pounce on — a window onto the outside world and a healthy outlet for all that energy.",
       "Every stream of birds for cats to watch is its own little scene — we set up varied scenes and add food into the mix to draw the birds and squirrels in, so there's always lively movement to catch your cat's eye. Fresh squirrel videos for cats to watch, all year round — proper TV for cats, on 24/7.",
     ],
+    viewingNotes: {
+      playback:
+        "Once a video starts it plays straight through — no mid-roll breaks cutting across the action your cat is stalking.",
+      page: "And this page stays clean: no pop-ups and no banner ads competing for the screen.",
+    },
     crossPromo: {
       href: "https://www.dogtvfordogs.com",
       before: "Share your home with a dog as well? Treat them to ",
@@ -232,6 +254,13 @@ export const CHANNELS: Record<string, ChannelBranding> = {
       "Dog TV is simple: long, steady walks through real woodland — bluebell woods, ancient forest and quiet country paths — filmed at a dog's pace. The gentle motion and soft natural sound help anxious and home-alone dogs relax, giving them a calm window onto the outside world.",
       "Every virtual dog walk is hand-picked to be calm and dog-friendly: no sudden noises, no flashing, just hours of relaxing nature. We film peaceful trails through the seasons, so there are always fresh calming videos for dogs to watch — proper TV for dogs, streaming 24/7.",
     ],
+    viewingNotes: {
+      footage:
+        "Every walk is real footage filmed on real trails — never AI-generated, just genuine woodland filmed at a dog's pace.",
+      playback:
+        "Once a walk starts it plays straight through, with no mid-roll breaks interrupting the calm your dog has settled into.",
+      page: "And the page itself stays quiet: no pop-ups and no banner ads.",
+    },
     crossPromo: {
       href: "https://www.cattvforcats.com",
       before: "Got a cat in the house too? They'll happily settle in front of ",

@@ -61,7 +61,7 @@ export default async function WatchPage({
       <SiteHeader />
 
       <article className="mx-auto w-full max-w-6xl px-6 pb-8 pt-0 sm:pt-8">
-        <div className="-mx-6 aspect-video overflow-hidden bg-black sm:mx-0 sm:rounded-2xl sm:shadow-lg">
+        <div className="relative -mx-6 aspect-video overflow-hidden bg-black sm:mx-0 sm:rounded-2xl sm:shadow-lg">
           <VideoEmbed videoId={v.videoId} title={v.heading} />
         </div>
 

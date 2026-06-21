@@ -82,12 +82,14 @@ export interface ChannelBranding {
   introParagraphs: string[];
   /**
    * Short, indexable assurances about how the videos play, shown on the homepage and
-   * every watch page. These address the strong "no ads" / "no AI" search intent —
-   * but they must stay truthful. The videos are embedded from YouTube, which still
-   * serves a pre-roll ad before playback, so we never claim "no ads" / "ad-free".
-   * Instead each truth is stated distinctly:
-   *   - `playback`: what's true once the video is running (no mid-roll breaks).
-   *   - `page`: what's true of the page itself (no pop-ups or banner ads).
+   * every watch page. These must rank for the strong "no ads" / "no AI" search intent
+   * AND stay truthful — so use the "no ads" keyword only in qualified form ("no ads
+   * interrupting it", "no ad breaks") and always disclose the pre-roll. The videos are
+   * embedded from YouTube, which still serves one pre-roll ad before playback, so we
+   * never make a blanket / unqualified "no ads" / "ad-free" claim. Each truth is stated
+   * distinctly:
+   *   - `playback`: what's true once the video is running (no ad breaks interrupting it).
+   *   - `page`: no pop-ups or banner ads on the page, plus the honest pre-roll disclosure.
    *   - `footage` (optional): the genuine-footage assurance — real, never AI-generated
    *     (dog channel only, addressing "dog tv no ai").
    * Keep each to a single short sentence so they read as facts, not promises.
@@ -143,8 +145,8 @@ export const CHANNELS: Record<string, ChannelBranding> = {
     ],
     viewingNotes: {
       playback:
-        "Once a video starts it plays straight through — no mid-roll breaks cutting across the action your cat is stalking.",
-      page: "And this page stays clean: no pop-ups and no banner ads competing for the screen.",
+        "Cat TV with no ads interrupting it: once a video starts it plays straight through, with no ad breaks cutting across the action your cat is stalking.",
+      page: "There are no pop-ups or banner ads on the page either — the only ad is the short one YouTube plays before the video begins, and after that it's uninterrupted.",
     },
     crossPromo: {
       href: "https://www.dogtvfordogs.com",
@@ -279,8 +281,8 @@ export const CHANNELS: Record<string, ChannelBranding> = {
       footage:
         "Every walk is real footage filmed on real trails — never AI-generated, just genuine woodland filmed at a dog's pace.",
       playback:
-        "Once a walk starts it plays straight through, with no mid-roll breaks interrupting the calm your dog has settled into.",
-      page: "And the page itself stays quiet: no pop-ups and no banner ads.",
+        "Dog TV with no ads interrupting it: once a walk starts it plays straight through, with no ad breaks disturbing the calm your dog has settled into.",
+      page: "There are no pop-ups or banner ads on the page either — the only ad is the short one YouTube plays before the walk begins, and after that it's uninterrupted.",
     },
     crossPromo: {
       href: "https://www.cattvforcats.com",

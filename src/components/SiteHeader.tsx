@@ -10,13 +10,13 @@ export default function SiteHeader() {
           {SITE.headerLabel}
         </Link>
         <nav className="flex items-center gap-6 text-sm font-semibold text-[#5c6b62]">
-          <Link href="/#about" className="hover:text-[#1f2a24]">
+          <Link href="/#about" className="hidden hover:text-[#1f2a24] sm:inline">
             About
           </Link>
           <Link href="/videos" className="hover:text-[#1f2a24]">
             All videos
           </Link>
-          <Link href="/themes" className="hover:text-[#1f2a24]">
+          <Link href="/themes" className="hidden hover:text-[#1f2a24] sm:inline">
             Themes
           </Link>
           <Link href={`/${SITE.streamsSlug}`} className="rounded-lg bg-[#dc2626] px-4 py-2 text-white hover:bg-[#b91c1c]">

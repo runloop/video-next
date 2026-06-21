@@ -290,11 +290,11 @@ export const CHANNELS: Record<string, ChannelBranding> = {
         // Walk-type partition. Tenuous demand only — "dog pov" (505),
         // "dog tv no animals" (262) — so nav-only, but copy uses that phrasing.
         slug: "pov-walks",
-        title: "Dog POV walks (no animals)",
-        tags: ["pov", "noanimals", "no-animals"],
+        title: "POV dog walks (no dogs in shot)",
+        tags: ["nodogs"],
         index: false,
         description:
-          "First-person POV dog walks with no animals in shot — just the quiet trail ahead, for dogs who settle better without other animals on screen.",
+          "First-person POV walks with no dogs in shot — just the trail ahead, with the odd pony or other wildlife along the way. Made for dogs who settle better without other dogs on screen.",
       },
     ],
   },

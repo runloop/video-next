@@ -11,7 +11,7 @@ import {
   featured,
   relativeDay,
   formatCount,
-  titleWithKeywords,
+  headingFor,
   hasNoMusic,
   type PublishedRow,
   type StreamRow,
@@ -37,6 +37,9 @@ function publishedRow(over: Partial<PublishedRow> = {}): PublishedRow {
     description: "A description.",
     tags: [],
     has_music: null,
+    seo_title: null,
+    seo_slug: null,
+    seo_description: null,
     ...over,
   };
 }
@@ -52,6 +55,9 @@ function streamRow(over: Partial<StreamRow> = {}): StreamRow {
     description: "Streaming.",
     tags: [],
     has_music: null,
+    seo_title: null,
+    seo_slug: null,
+    seo_description: null,
     ...over,
   };
 }
@@ -106,21 +112,21 @@ describe("publishedToVideos", () => {
     expect(videos.map((v) => v.slug)).toEqual(["garden", "garden-2", "garden-3"]);
   });
 
-  test("appends the search phrase to the author's own title", () => {
+  test("falls back to title + light brand for the heading and meta title", () => {
     const [v] = publishedToVideos(
       [publishedRow({ title: "Sunny morning at the bird table", tags: ["birdtables"] })],
       CAT,
     );
-    expect(v.keyword).toBe("Sunny morning at the bird table — Cat TV for Cats to Watch");
-    expect(v.metaTitle).toBe("Sunny morning at the bird table — Cat TV for Cats to Watch");
+    expect(v.heading).toBe("Sunny morning at the bird table — Cat TV");
+    expect(v.metaTitle).toBe("Sunny morning at the bird table — Cat TV");
     // The raw title is preserved verbatim for card/nav use.
     expect(v.title).toBe("Sunny morning at the bird table");
   });
 
   test("keeps the title even when there are no tags (no scene logic)", () => {
     const [v] = publishedToVideos([publishedRow({ title: "Garden", tags: [] })], CAT);
-    expect(v.keyword).toBe("Garden — Cat TV for Cats to Watch");
-    expect(v.metaTitle).toBe("Garden — Cat TV for Cats to Watch");
+    expect(v.heading).toBe("Garden — Cat TV");
+    expect(v.metaTitle).toBe("Garden — Cat TV");
     // Slug still derives from the raw title, preserving existing /watch URLs.
     expect(v.slug).toBe("garden");
   });
@@ -150,48 +156,60 @@ describe("streamsToVideos", () => {
   });
 });
 
-describe("titleWithKeywords", () => {
-  test("cat: appends the head term + 'for cats to watch' to the author's title", () => {
-    expect(titleWithKeywords("Sunny morning at the bird table", CAT)).toBe(
-      "Sunny morning at the bird table — Cat TV for Cats to Watch",
+describe("headingFor", () => {
+  test("cat: falls back to title + light brand when no seo_title", () => {
+    expect(headingFor("Sunny morning at the bird table", null, CAT)).toBe(
+      "Sunny morning at the bird table — Cat TV",
     );
   });
 
-  test("dog: appends 'for dogs to watch'", () => {
-    expect(titleWithKeywords("A walk through the bluebells", DOG)).toBe(
-      "A walk through the bluebells — Dog TV for Dogs to Watch",
+  test("dog: falls back to title + Dog TV", () => {
+    expect(headingFor("A walk through the bluebells", null, DOG)).toBe(
+      "A walk through the bluebells — Dog TV",
     );
   });
 
-  test("uses the title verbatim regardless of tags/scene — no exclusion", () => {
-    // Any title is used as-is; there is no scene concept and nothing is dropped.
-    expect(titleWithKeywords("Totally off-script footage", CAT)).toBe(
-      "Totally off-script footage — Cat TV for Cats to Watch",
+  test("uses an authored seo_title verbatim — nothing appended", () => {
+    expect(headingFor("Raw YouTube title 🐿️", "Birds at the feeder all day", CAT)).toBe(
+      "Birds at the feeder all day",
     );
   });
 
-  test("trims surrounding whitespace but keeps the title otherwise verbatim", () => {
-    expect(titleWithKeywords("  Bird table 4K 🐿️  ", CAT)).toBe(
-      "Bird table 4K 🐿️ — Cat TV for Cats to Watch",
-    );
+  test("blank/whitespace seo_title falls through to the title fallback", () => {
+    expect(headingFor("Bird table", "   ", CAT)).toBe("Bird table — Cat TV");
   });
 
-  test("the keyword phrase stands alone when the title is empty", () => {
-    expect(titleWithKeywords("", CAT)).toBe("Cat TV for Cats to Watch");
-    expect(titleWithKeywords("   ", DOG)).toBe("Dog TV for Dogs to Watch");
+  test("trims surrounding whitespace on the fallback but keeps the title otherwise verbatim", () => {
+    expect(headingFor("  Bird table 4K 🐿️  ", null, CAT)).toBe("Bird table 4K 🐿️ — Cat TV");
+  });
+
+  test("the brand stands alone when both override and title are empty", () => {
+    expect(headingFor("", null, CAT)).toBe("Cat TV");
+    expect(headingFor("   ", null, DOG)).toBe("Dog TV");
   });
 });
 
 describe("toVideo titling", () => {
-  test("keyword and metaTitle both append the phrase to the real title", () => {
+  test("heading and metaTitle both use the title + light brand fallback", () => {
     const [v] = publishedToVideos(
       [publishedRow({ title: "Bird table at dawn", tags: ["birdtables"] })],
       CAT,
     );
-    expect(v.keyword).toBe("Bird table at dawn — Cat TV for Cats to Watch");
-    expect(v.metaTitle).toBe("Bird table at dawn — Cat TV for Cats to Watch");
+    expect(v.heading).toBe("Bird table at dawn — Cat TV");
+    expect(v.metaTitle).toBe("Bird table at dawn — Cat TV");
     // The raw title is preserved verbatim for card/nav use.
     expect(v.title).toBe("Bird table at dawn");
+  });
+
+  test("an authored seo_title overrides both heading and metaTitle verbatim", () => {
+    const [v] = publishedToVideos(
+      [publishedRow({ title: "Raw title 🐿️", seo_title: "Garden birds for a relaxed afternoon" })],
+      CAT,
+    );
+    expect(v.heading).toBe("Garden birds for a relaxed afternoon");
+    expect(v.metaTitle).toBe("Garden birds for a relaxed afternoon");
+    // The raw title is still preserved for card/nav use.
+    expect(v.title).toBe("Raw title 🐿️");
   });
 
   test("slugs stay collision-free when titles repeat", () => {
@@ -204,6 +222,68 @@ describe("toVideo titling", () => {
       CAT,
     );
     expect(new Set(videos.map((v) => v.slug)).size).toBe(3);
+  });
+});
+
+describe("seo_slug override", () => {
+  test("uses an authored slug verbatim — never auto-suffixed", () => {
+    const [v] = publishedToVideos(
+      [publishedRow({ title: "Some Raw Title", seo_slug: "birds-for-cats-to-watch" })],
+      CAT,
+    );
+    expect(v.slug).toBe("birds-for-cats-to-watch");
+  });
+
+  test("falls back to slugify(title) + suffix when null", () => {
+    const videos = publishedToVideos(
+      [publishedRow({ title: "Garden" }), publishedRow({ title: "Garden" })],
+      CAT,
+    );
+    expect(videos.map((v) => v.slug)).toEqual(["garden", "garden-2"]);
+  });
+
+  test("derived slugs yield around an authored slug (authored seen-set seeded first)", () => {
+    // The derived slug would naturally be "garden", but an authored "garden" elsewhere
+    // owns it, so the derived one suffixes around it.
+    const videos = publishedToVideos(
+      [
+        publishedRow({ title: "Garden" }), // derived
+        publishedRow({ title: "Ignored title", seo_slug: "garden" }), // authored, wins "garden"
+      ],
+      CAT,
+    );
+    expect(videos.map((v) => v.slug)).toEqual(["garden-2", "garden"]);
+  });
+});
+
+describe("seo_description override", () => {
+  test("drives summary (full), the derived blurb, and the derived meta when set", () => {
+    const authored = "Goldfinches and tits visit a busy garden feeder. A calm afternoon scene.";
+    const [v] = publishedToVideos(
+      [publishedRow({ description: "Raw project description.", seo_description: authored })],
+      CAT,
+    );
+    // Rendered in full below the fold.
+    expect(v.summary).toBe(authored);
+    // Blurb (card subtitle AND meta/OG description) is the first-sentence trim of it.
+    expect(v.blurb).toBe("Goldfinches and tits visit a busy garden feeder.");
+  });
+
+  test("falls back to the project description when null", () => {
+    const [v] = publishedToVideos(
+      [publishedRow({ description: "Raw project description.", seo_description: null })],
+      CAT,
+    );
+    expect(v.summary).toBe("Raw project description.");
+    expect(v.blurb).toBe("Raw project description.");
+  });
+
+  test("blank/whitespace seo_description falls through to the project description", () => {
+    const [v] = publishedToVideos(
+      [publishedRow({ description: "Raw project description.", seo_description: "   " })],
+      CAT,
+    );
+    expect(v.summary).toBe("Raw project description.");
   });
 });
 

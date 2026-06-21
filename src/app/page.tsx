@@ -37,14 +37,14 @@ export default async function Home() {
       <section className="mx-auto w-full max-w-6xl px-6 pb-10 pt-0 sm:pt-10">
         <div className="grid gap-8 lg:grid-cols-[1.4fr_1fr] lg:items-center">
           <div className="-mx-6 aspect-video overflow-hidden bg-black sm:mx-0 sm:rounded-2xl sm:shadow-lg">
-            <VideoEmbed videoId={v.videoId} title={v.keyword} />
+            <VideoEmbed videoId={v.videoId} title={v.heading} />
           </div>
           <div>
             <span className="inline-flex items-center gap-1.5 rounded-full bg-accent-soft px-3 py-1 text-sm font-bold text-accent">
               <span className="h-2 w-2 rounded-full bg-accent animate-pulse" /> Streaming now
             </span>
             <h1 className="mt-3 font-display text-4xl font-bold leading-[1.1]">{SITE.homeHeading}</h1>
-            <p className="mt-3 text-xl font-semibold text-[#1f2a24]">Now playing: {v.keyword}</p>
+            <p className="mt-3 text-xl font-semibold text-[#1f2a24]">Now playing: {v.heading}</p>
             <p className="mt-4 text-lg leading-relaxed text-[#3f4d45]">{v.summary}</p>
             <div className="mt-5 flex gap-3 text-sm font-semibold text-[#5c6b62]">
               <span className="rounded-lg bg-[#f3f7f4] px-3 py-1.5">⏱ {v.durationLabel}</span>

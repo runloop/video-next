@@ -26,15 +26,16 @@ export async function generateMetadata({
   const v = await getVideo(id);
   if (!v) return {};
   return {
-    // metaTitle already ends with the brand head ("… Cat TV for Cats to Watch"), so
-    // render it absolute — the root layout's "· {site name}" template would double it.
+    // metaTitle is the authored seo_title (or "title — brand") and already carries any
+    // brand, so render it absolute — the root layout's "· {site name}" template would
+    // double it. The meta/OG description is the derived blurb, not the full copy.
     title: { absolute: v.metaTitle },
-    description: v.summary,
+    description: v.blurb,
     alternates: { canonical: `/watch/${v.slug}` },
     openGraph: {
       type: "video.other",
       title: v.metaTitle,
-      description: v.summary,
+      description: v.blurb,
       url: `/watch/${v.slug}`,
       images: [`https://i.ytimg.com/vi/${v.videoId}/maxresdefault.jpg`],
     },
@@ -60,7 +61,7 @@ export default async function WatchPage({
 
       <article className="mx-auto w-full max-w-6xl px-6 pb-8 pt-0 sm:pt-8">
         <div className="-mx-6 aspect-video overflow-hidden bg-black sm:mx-0 sm:rounded-2xl sm:shadow-lg">
-          <VideoEmbed videoId={v.videoId} title={v.keyword} />
+          <VideoEmbed videoId={v.videoId} title={v.heading} />
         </div>
 
         <nav className="mb-1 mt-3 text-sm font-semibold text-[#5c6b62] sm:mt-6">
@@ -73,7 +74,7 @@ export default async function WatchPage({
           </Link>
         </nav>
 
-        <h1 className="font-display text-3xl font-bold leading-tight sm:text-4xl">{v.keyword}</h1>
+        <h1 className="font-display text-3xl font-bold leading-tight sm:text-4xl">{v.heading}</h1>
 
         <div className="mt-5 flex flex-wrap gap-3 text-sm font-semibold text-[#5c6b62]">
           <span className="rounded-lg bg-[#f3f7f4] px-3 py-1.5">⏱ {v.durationLabel}</span>
@@ -83,7 +84,6 @@ export default async function WatchPage({
         {v.summary && (
           <p className="mt-5 max-w-3xl text-lg leading-relaxed text-[#3f4d45]">{v.summary}</p>
         )}
-        {v.body && <p className="mt-4 max-w-3xl text-lg leading-relaxed text-[#3f4d45]">{v.body}</p>}
 
         <p className="mt-4 max-w-3xl text-base leading-relaxed text-[#5c6b62]">
           {SITE.viewingNotes.footage && `${SITE.viewingNotes.footage} `}

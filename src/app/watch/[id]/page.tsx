@@ -7,7 +7,7 @@ import VideoEmbed from "@/components/VideoEmbed";
 import VideoCard from "@/components/VideoCard";
 import VideoSchema from "@/components/VideoSchema";
 import { getVideo, getVideos, getRelated } from "@/lib/videos";
-import { getCategoriesForTags } from "@/lib/channel";
+import { getBranding, getCategoriesForTags } from "@/lib/channel";
 
 export const revalidate = 3600;
 
@@ -49,6 +49,7 @@ export default async function WatchPage({
 
   const others = await getRelated(v, 3);
   const themes = getCategoriesForTags(v.tags);
+  const SITE = getBranding();
 
   return (
     <div className="flex min-h-screen flex-col bg-white text-[#1f2a24] font-body">
@@ -80,6 +81,11 @@ export default async function WatchPage({
           <p className="mt-5 max-w-3xl text-lg leading-relaxed text-[#3f4d45]">{v.summary}</p>
         )}
         {v.body && <p className="mt-4 max-w-3xl text-lg leading-relaxed text-[#3f4d45]">{v.body}</p>}
+
+        <p className="mt-4 max-w-3xl text-base leading-relaxed text-[#5c6b62]">
+          {SITE.viewingNotes.footage && `${SITE.viewingNotes.footage} `}
+          {SITE.viewingNotes.playback} {SITE.viewingNotes.page}
+        </p>
 
         {themes.length > 0 && (
           <div className="mt-6 flex flex-wrap items-center gap-2 text-sm">

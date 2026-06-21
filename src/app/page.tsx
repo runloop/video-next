@@ -76,6 +76,10 @@ export default async function Home() {
             <p key={i}>{p}</p>
           ))}
           <p>
+            {SITE.viewingNotes.footage && `${SITE.viewingNotes.footage} `}
+            {SITE.viewingNotes.playback} {SITE.viewingNotes.page}
+          </p>
+          <p>
             {SITE.crossPromo.before}
             <a href={SITE.crossPromo.href} className="font-semibold text-accent hover:underline">
               {SITE.crossPromo.linkText}

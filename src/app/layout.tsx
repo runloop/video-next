@@ -54,6 +54,12 @@ export default function RootLayout({
       lang="en"
       className={`${inter.variable} ${fredoka.variable} h-full antialiased`}
     >
+      <head>
+        {/* Open connections early to the YouTube origins that gate the hero
+            embed (LCP) and the thumbnail grid. */}
+        <link rel="preconnect" href="https://www.youtube-nocookie.com" />
+        <link rel="preconnect" href="https://i.ytimg.com" />
+      </head>
       <body className="min-h-full flex flex-col font-body">
         <SiteSchema />
         {children}

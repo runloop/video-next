@@ -27,7 +27,7 @@ export async function generateMetadata({
   if (!s) return {};
   return {
     title: `${s.title} — ${getBranding().streamsLabel}`,
-    description: s.summary,
+    description: s.metaDescription,
     // Streams are ephemeral — keep their pages out of the index so they don't
     // become dead/duplicate URLs once the stream ends. `follow` lets link equity
     // flow back to the indexable pages they point at.
@@ -53,7 +53,7 @@ export default async function StreamPage({
 
       <article className="mx-auto w-full max-w-6xl px-6 pb-8 pt-0 sm:pt-8">
         <div className="-mx-6 aspect-video overflow-hidden bg-black sm:mx-0 sm:rounded-2xl sm:shadow-lg">
-          <VideoEmbed videoId={s.videoId} title={s.keyword} />
+          <VideoEmbed videoId={s.videoId} title={s.heading} />
         </div>
 
         <nav className="mb-1 mt-3 text-sm font-semibold text-[#5c6b62] sm:mt-6">
@@ -67,7 +67,7 @@ export default async function StreamPage({
         </nav>
 
         <h1 className="font-display text-3xl font-bold leading-tight sm:text-4xl">
-          🔴 {s.keyword}
+          🔴 {s.heading}
         </h1>
 
         <div className="mt-5 flex flex-wrap gap-3 text-sm font-semibold text-[#5c6b62]">

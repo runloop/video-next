@@ -15,16 +15,32 @@ export interface Video {
   title: string;
   /** Tags, used for related videos. */
   tags: string[];
-  /** <h1> — falls back to title until a dedicated SEO column exists. */
-  keyword: string;
-  /** <title>/OG title. */
+  /**
+   * The composed `<h1>`: the authored `seo_title` verbatim when set, else the
+   * title + a light brand (`— Cat TV`/`— Dog TV`). Holds the SAME value as
+   * `metaTitle` — `<h1>` and `<title>` are locked together under one override.
+   */
+  heading: string;
+  /** <title>/OG title — the same value as `heading` (see above). */
   metaTitle: string;
-  /** Short card subtitle — falls back to the first line of the description. */
+  /**
+   * Short card subtitle for the fixed card slot. The authored `seo_blurb` capped at
+   * 90 chars when set, else the first sentence of the effective description trimmed to
+   * 90 (`toBlurb(seo_description ?? description)`). Separate from `metaDescription`:
+   * the two have different length budgets (~90 vs ~155).
+   */
   blurb: string;
-  /** Indexable copy shown under the video (the project description). */
+  /**
+   * The `<meta>`/OG description — the effective description (`seo_description ??
+   * description`) trimmed to ~155 chars at a sentence/word boundary. NOT the 90-char
+   * card blurb and NOT the full `summary`.
+   */
+  metaDescription: string;
+  /**
+   * The long-form below-the-fold copy, rendered in full: the authored
+   * `seo_description` when set, else the project description.
+   */
   summary: string;
-  /** Longer below-the-fold copy. Empty until a dedicated SEO column exists. */
-  body: string;
   /** ISO-8601 duration for schema.org, e.g. PT3H12M. */
   durationIso: string;
   /** Human-readable duration. */
@@ -56,6 +72,14 @@ export interface PublishedRow {
   tags: string[] | null;
   /** `public.projects.has_music`; null when the column is null/absent. */
   has_music: boolean | null;
+  /**
+   * Hand-authored SEO override columns on `public.projects`, read-only to the app
+   * and null until the data side populates them (the normal case). See ADR-0002.
+   */
+  seo_title: string | null;
+  seo_slug: string | null;
+  seo_description: string | null;
+  seo_blurb: string | null;
 }
 
 /** An active-stream row, as selected by the live-stream query in videos.ts. */
@@ -70,6 +94,15 @@ export interface StreamRow {
   tags: string[] | null;
   /** `streams_active.has_music`; null when the column is null/absent. */
   has_music: boolean | null;
+  /**
+   * The same `public.projects` SEO override columns the catalogue reads. Streams are
+   * ephemeral and not authored for SEO, so in practice these stay null and a stream
+   * falls back to the `title — brand` heading and a derived slug. See ADR-0002.
+   */
+  seo_title: string | null;
+  seo_slug: string | null;
+  seo_description: string | null;
+  seo_blurb: string | null;
 }
 
 /** The shape both sources normalise to before mapping into a Video. */
@@ -83,52 +116,56 @@ interface Common {
   views: number;
   liveViewers: number;
   hasMusic: boolean | null;
+  /** Authored SEO overrides; null is the normal (un-authored) case. See ADR-0002. */
+  seoTitle: string | null;
+  seoSlug: string | null;
+  seoDescription: string | null;
+  seoBlurb: string | null;
 }
 
 // Default published-video target length when the DB stores 0 (minutes).
 const DEFAULT_DURATION_MINUTES = 600;
 
-// --- SEO title templating ---------------------------------------------------
+// --- SEO heading + title ----------------------------------------------------
 //
-// The raw YouTube `title` is emoji-stuffed and keyword-noisy, so instead of
-// inheriting it we generate a clean, keyword-led `<h1>` (`keyword`) and OG/`<title>`
-// (`metaTitle`) from data we already have: the video's tags + the channel.
+// The `<h1>` and `<title>`/OG hold the SAME value and are driven by one authored
+// override, `seo_title` (see ADR-0002). When set it is used verbatim — nothing is
+// appended. When null (the normal case until the data side authors it) we fall back
+// to the title + a light brand (`— Cat TV`/`— Dog TV`).
 //
-// Every video keeps its own title verbatim; we append the recurring search phrase
-// `{Brand} for cats/dogs to watch` (the single biggest phrasing cluster in the data)
-// so each page carries the keyword while staying distinct. No scene/tag logic and no
-// page is excluded — the cat/dog distinction and the head term come from config
-// (TitleConfig), built once at the edge in videos.ts so this layer stays pure.
-// (Titles never contain "live" — the content is never presented as live — so there's
-// nothing to sanitise.)
+// This replaces the old blanket `… for Cats/Dogs to Watch` append: the head term
+// lives on the home/`/videos`/theme headings, so repeating it per video read as a
+// templated footprint. The cat/dog brand still comes from config (TitleConfig), built
+// once at the edge in videos.ts so this layer stays pure. (Titles never contain
+// "live" — the content is never presented as live — so there's nothing to sanitise.)
 
-/** What kind of channel this is — drives the recurring "for cats/dogs to watch" unit. */
+/** What kind of channel this is — selects the light brand fallback. */
 export type ChannelKind = "cat" | "dog";
 
 /**
- * Everything the pure title templating needs, derived from channel config at the edge
+ * Everything the pure heading fallback needs, derived from channel config at the edge
  * (videos.ts) so catalogue.ts stays free of env/config. See titleConfigFor in videos.ts.
  */
 export interface TitleConfig {
-  /** "cat" | "dog" — selects the phrasing family. */
+  /** "cat" | "dog". */
   kind: ChannelKind;
-  /** Head term for the appended keyword phrase, e.g. "Cat TV", "Dog TV". */
+  /** Light brand for the title fallback, e.g. "Cat TV", "Dog TV". */
   brand: string;
 }
 
 /**
- * The SEO title for a video: the author's own title (verbatim, trimmed) with the search
- * phrase `{Brand} for {Cats|Dogs} to Watch` appended, e.g.
- * "Sunny morning at the bird table — Cat TV for Cats to Watch". Used for both the
- * `<h1>` (keyword) and the `<title>`/OG (metaTitle); the watch page renders metaTitle
+ * The composed heading/meta title for a video: the authored `seo_title` verbatim when
+ * set (nothing appended), else the title + a light brand, e.g.
+ * "Sunny morning at the bird table — Cat TV". Used for BOTH the `<h1>` (heading) and the
+ * `<title>`/OG (metaTitle), which are locked together; the watch page renders metaTitle
  * with `absolute` so the layout's "· {site name}" template doesn't double the brand.
- * If the title is empty, the keyword phrase stands alone.
+ * If both the override and title are empty, the brand stands alone.
  */
-export function titleWithKeywords(rawTitle: string, config: TitleConfig): string {
-  const audience = config.kind === "cat" ? "Cats" : "Dogs";
-  const suffix = `${config.brand} for ${audience} to Watch`;
+export function headingFor(rawTitle: string, seoTitle: string | null, config: TitleConfig): string {
+  const authored = (seoTitle ?? "").trim();
+  if (authored) return authored;
   const title = (rawTitle ?? "").trim();
-  return title ? `${title} — ${suffix}` : suffix;
+  return title ? `${title} — ${config.brand}` : config.brand;
 }
 
 // --- mapping helpers (exported for direct testing) --------------------------
@@ -169,6 +206,35 @@ export function toBlurb(description: string): string {
   return first.length > 90 ? `${first.slice(0, 87).trimEnd()}…` : first;
 }
 
+/**
+ * Cap an authored card blurb at 90 chars, truncating with an ellipsis (same style as
+ * `toBlurb`): keep the first 87 chars, trim trailing space, append "…". Authored blurbs
+ * should already fit the card slot; this is a guard, not a derivation.
+ */
+export function capBlurb(blurb: string): string {
+  return blurb.length > 90 ? `${blurb.slice(0, 87).trimEnd()}…` : blurb;
+}
+
+/**
+ * The `<meta>`/OG description, trimmed to ~155 chars at a boundary. Prefer the first
+ * sentence; if that already fits within 155, use it. Otherwise cut at the last sentence
+ * end before 155, falling back to the last word boundary, and append an ellipsis. Sized
+ * to the meta-description budget — wider than the 90-char card blurb (`toBlurb`).
+ */
+export function toMetaDescription(description: string): string {
+  const text = description.trim();
+  const first = text.split(/(?<=[.!?])\s/)[0] ?? text;
+  // A first sentence that fits is the cleanest description — use it whole.
+  if (first.length <= 155) return first;
+  // Otherwise cut the long copy at a boundary within 155 and mark the truncation.
+  const head = text.slice(0, 155);
+  const sentenceEnd = Math.max(head.lastIndexOf(". "), head.lastIndexOf("! "), head.lastIndexOf("? "));
+  if (sentenceEnd > 0) return head.slice(0, sentenceEnd + 1);
+  const wordEnd = head.lastIndexOf(" ");
+  const cut = wordEnd > 0 ? head.slice(0, wordEnd) : head.slice(0, 154);
+  return `${cut.trimEnd()}…`;
+}
+
 function toIsoDate(value: Date | string | null): string {
   if (!value) return "";
   return (value instanceof Date ? value : new Date(value)).toISOString().slice(0, 10);
@@ -205,6 +271,10 @@ function publishedToCommon(row: PublishedRow): Common {
     views: row.views ?? 0,
     liveViewers: 0,
     hasMusic: toHasMusic(row.has_music),
+    seoTitle: row.seo_title ?? null,
+    seoSlug: row.seo_slug ?? null,
+    seoDescription: row.seo_description ?? null,
+    seoBlurb: row.seo_blurb ?? null,
   };
 }
 
@@ -219,23 +289,41 @@ function streamToCommon(row: StreamRow): Common {
     views: row.views ?? 0,
     liveViewers: row.live_viewers ?? 0,
     hasMusic: toHasMusic(row.has_music),
+    seoTitle: row.seo_title ?? null,
+    seoSlug: row.seo_slug ?? null,
+    seoDescription: row.seo_description ?? null,
+    seoBlurb: row.seo_blurb ?? null,
   };
 }
 
-/** Map one normalised row into a Video, allocating a collision-free slug. */
+/**
+ * Map one normalised row into a Video. An authored `seoSlug` is used verbatim; otherwise
+ * a collision-free slug is derived from the title (suffixing around already-seen slugs).
+ */
 function toVideo(c: Common, config: TitleConfig, seen: Set<string>): Video {
+  // The effective long-form copy: the authored override, else the project description.
+  const summary = (c.seoDescription ?? "").trim() || c.description;
+  // The card blurb: an authored seo_blurb (capped at 90) wins; else derive from the
+  // effective copy. The meta/OG description is derived separately at ~155 chars.
+  const authoredBlurb = (c.seoBlurb ?? "").trim();
+  const blurb = authoredBlurb ? capBlurb(authoredBlurb) : toBlurb(summary);
+  // An authored slug wins verbatim (its `seen` entry is seeded up front in toVideos);
+  // otherwise derive from the title so existing /watch URLs stay stable.
+  const authoredSlug = (c.seoSlug ?? "").trim();
+  const slug = authoredSlug || uniqueSlug(c.title || "video", seen);
+  const heading = headingFor(c.title, c.seoTitle, config);
   return {
     title: c.title,
     tags: c.tags,
-    // The author's title (sanitised of "live") with the search phrase appended.
-    keyword: titleWithKeywords(c.title, config),
-    metaTitle: titleWithKeywords(c.title, config),
-    blurb: toBlurb(c.description),
-    summary: c.description,
-    body: "",
-    // Slug still derives from the raw title so existing /watch URLs stay stable; the
-    // templated titles are non-unique by design and would collapse to one base slug.
-    slug: uniqueSlug(c.title || "video", seen),
+    // `<h1>` and `<title>`/OG are locked together under one `seo_title` override.
+    heading,
+    metaTitle: heading,
+    // Card subtitle (authored or 90-char derivation) and meta/OG description (~155)
+    // are sized separately — see blurb/metaDescription above and on Video.
+    blurb,
+    metaDescription: toMetaDescription(summary),
+    summary,
+    slug,
     videoId: c.videoId,
     ...durationFromMinutes(c.minutes),
     uploadDate: toIsoDate(c.date),
@@ -245,9 +333,17 @@ function toVideo(c: Common, config: TitleConfig, seen: Set<string>): Video {
   };
 }
 
-/** Map a list of normalised rows, sharing one `seen` set so slugs stay unique. */
+/**
+ * Map a list of normalised rows, sharing one `seen` set so slugs stay unique. Authored
+ * `seoSlug` values are seeded into `seen` FIRST so derived slugs yield around them — an
+ * authored slug always wins (the DB enforces authored-slug uniqueness). See ADR-0002.
+ */
 function toVideos(commons: Common[], config: TitleConfig): Video[] {
   const seen = new Set<string>();
+  for (const c of commons) {
+    const authored = (c.seoSlug ?? "").trim();
+    if (authored) seen.add(authored);
+  }
   return commons.map((c) => toVideo(c, config, seen));
 }
 

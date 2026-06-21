@@ -26,12 +26,12 @@ import {
   type ChannelKind,
 } from "./catalogue";
 
-// --- SEO title config (channel config → pure templating) --------------------
+// --- SEO title config (channel config → pure heading fallback) --------------
 //
-// catalogue.ts appends the search phrase to each video's own title but stays
-// env/config-free, so we derive its TitleConfig here from channel branding. The
-// cat/dog distinction and the head term come from the channel `name` ("Cat TV for
-// Cats" / "Dog TV for Dogs"), not a hard-coded per-schema switch.
+// catalogue.ts composes each video's heading/meta title but stays env/config-free,
+// so we derive its TitleConfig here from channel branding. The light brand used in
+// the `seo_title` fallback comes from the channel `name` ("Cat TV for Cats" / "Dog TV
+// for Dogs"), not a hard-coded per-schema switch.
 
 /** Derive the channel kind from branding — cat unless the name reads as a dog channel. */
 function channelKind(branding: ChannelBranding): ChannelKind {
@@ -66,6 +66,10 @@ const loadCatalogue = unstable_cache(
               p.description,
               p.tags,
               p.has_music,
+              p.seo_title,
+              p.seo_slug,
+              p.seo_description,
+              p.seo_blurb,
               a.views
        FROM   "${schema}".published_videos_all pv
        JOIN   public.published_videos base ON base.id = pv.id
@@ -136,7 +140,11 @@ const loadLiveStreams = unstable_cache(
               s.has_music,
               p.title,
               p.description,
-              p.tags
+              p.tags,
+              p.seo_title,
+              p.seo_slug,
+              p.seo_description,
+              p.seo_blurb
        FROM   "${schema}".streams_active s
        JOIN   public.projects p ON p.id = s.project_id
        LEFT JOIN public.stream_analytics sa ON sa.stream_id = s.id

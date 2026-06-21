@@ -38,6 +38,32 @@ A curated, tag-collected page at `/themes/<slug>` (e.g. "Bird table TV"). The co
 is `Category`; the user-facing word is **theme**.
 _Avoid_: tag page, category (in prose — reserve "Category" for the type name).
 
+**Heading** (the `<h1>`) vs **meta title** (the `<title>`/OG):
+The visible page heading and the SERP/share title. A `<title>` truncates in search
+results (~60 chars) so it wants to stay tight; an `<h1>` does not and can run long.
+_Avoid_: calling the heading the "keyword" — see the keyword ambiguity below.
+
+**Keyword**:
+A search phrase users actually type, e.g. `birds for cats to watch`. The recurring
+long-tail unit is `{X} for cats/dogs to watch`. A keyword is *not* a whole heading.
+_Avoid_: the misnomer in `Video.keyword`, which today holds the entire composed
+heading, not a keyword (being corrected — see ambiguities).
+
+**SEO override** (`seo_title`, `seo_slug`, `seo_description`, `seo_blurb`):
+Hand-authored columns on the shared DB that, when set, *replace* the value the app
+would otherwise derive. `seo_title` is a flat override of the whole heading + meta
+title (nothing appended); unset, it falls back to the title + a light brand
+(`— Cat TV`). `seo_description` is the long-form below-the-fold copy, rendered in full;
+the meta/OG description is *derived* from it (~155 chars, sentence boundary). `seo_blurb`
+is the card subtitle, authored to its own ~90-char budget (capped), falling back to the
+first sentence of the description. Splitting blurb from the meta description lets each be
+written to its own length, the same reason `<h1>` and `<title>` were kept distinct in
+spirit. `seo_slug` is used verbatim as the URL and never auto-suffixed (the DB enforces
+its uniqueness). The blanket `… for Cats to Watch` suffix on every page is *not* wanted —
+the head term lives on the home/`/videos`/theme headings, and repeating it per video
+reads as a templated footprint.
+_Avoid_: "templated title" for the authored path — that's the fallback, not the goal.
+
 ## Flagged ambiguities
 
 - **Theme vs Category**: the same concept. "Theme" is the word in copy and URLs;

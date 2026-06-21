@@ -12,7 +12,12 @@ const channel = process.env.CHANNEL_SCHEMA
 const nextConfig: NextConfig = {
   async rewrites() {
     if (!channel) return [];
-    return [{ source: `/${channel.streamsSlug}`, destination: "/streams" }];
+    return [
+      { source: `/${channel.streamsSlug}`, destination: "/streams" },
+      // Browsers (and some crawlers) probe /favicon.ico directly, ignoring the
+      // <link> tags. Serve the active channel's icon from that well-known path.
+      { source: "/favicon.ico", destination: channel.icon.favicon },
+    ];
   },
 };
 

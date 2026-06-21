@@ -43,6 +43,20 @@ export interface ChannelBranding {
   youtube: string;
   /** Small wordmark in the header. */
   headerLabel: string;
+  /**
+   * Per-channel favicon/app-icon assets, served from public/branding/<schema>/ and
+   * wired into `metadata.icons` in the root layout. Each channel ships its own
+   * artwork so the two deployments are distinct in a browser tab and on a home
+   * screen. Generated from a 512px source PNG (see public/branding/).
+   */
+  icon: {
+    /** Classic multi-size .ico (16/32/48) for browser tabs. */
+    favicon: string;
+    /** High-res PNG icon (512px). */
+    png: string;
+    /** iOS home-screen icon (180px). */
+    apple: string;
+  };
   /** Header CTA label for the 24/7 stream page, e.g. "24/7 Dog TV". */
   streamsLabel: string;
   /**
@@ -136,6 +150,11 @@ export const CHANNELS: Record<string, ChannelBranding> = {
       "Cat TV for cats to watch: a 24/7 stream of birds and squirrels in ever-changing garden scenes, hand-picked to spark your indoor cat's hunting instinct and keep them watching for hours. Bird and squirrel videos for cats, on now.",
     youtube: "https://www.youtube.com/@patsysgarden",
     headerLabel: "🐾 Cat TV",
+    icon: {
+      favicon: "/branding/patsysgarden/favicon.ico",
+      png: "/branding/patsysgarden/icon.png",
+      apple: "/branding/patsysgarden/apple-icon.png",
+    },
     streamsLabel: "24/7 Cat TV",
     streamsSlug: "24-7-cat-tv",
     footerBy: "Patsy's Garden",
@@ -273,6 +292,11 @@ export const CHANNELS: Record<string, ChannelBranding> = {
       "Dog TV for dogs to watch and relax: hours of calming virtual dog walks through woodland and bluebell forests, made to settle dogs at home. Gentle, steady videos for dogs, streaming 24/7.",
     youtube: "https://www.youtube.com/@harmonyhoundsdogtv",
     headerLabel: "🐾 Dog TV",
+    icon: {
+      favicon: "/branding/harmonyhoundsdogtv/favicon.ico",
+      png: "/branding/harmonyhoundsdogtv/icon.png",
+      apple: "/branding/harmonyhoundsdogtv/apple-icon.png",
+    },
     streamsLabel: "24/7 Dog TV",
     streamsSlug: "24-7-dog-tv",
     footerBy: "Harmony Hounds",

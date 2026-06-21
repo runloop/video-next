@@ -82,9 +82,12 @@ export default async function WatchPage({
           <span className="rounded-lg bg-[#f3f7f4] px-3 py-1.5">🔇 Muted autoplay</span>
         </div>
 
-        {v.summary && (
-          <p className="mt-5 max-w-3xl text-lg leading-relaxed text-[#3f4d45]">{v.summary}</p>
-        )}
+        {v.summary &&
+          v.summary.split(/\n{2,}/).map((para, i) => (
+            <p key={i} className="mt-5 max-w-3xl text-lg leading-relaxed text-[#3f4d45]">
+              {para}
+            </p>
+          ))}
 
         <p className="mt-4 max-w-3xl text-base leading-relaxed text-[#5c6b62]">
           {SITE.viewingNotes.footage && `${SITE.viewingNotes.footage} `}

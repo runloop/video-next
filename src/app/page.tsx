@@ -3,7 +3,6 @@ import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 import VideoEmbed from "@/components/VideoEmbed";
 import VideoCard from "@/components/VideoCard";
-import VideoSchema from "@/components/VideoSchema";
 import { getFeaturedVideo, getPopularVideos } from "@/lib/videos";
 import { getBranding } from "@/lib/channel";
 
@@ -45,7 +44,7 @@ export default async function Home() {
             </span>
             <h1 className="mt-3 font-display text-4xl font-bold leading-[1.1]">{SITE.homeHeading}</h1>
             <p className="mt-3 text-xl font-semibold text-[#1f2a24]">Now playing: {v.heading}</p>
-            <p className="mt-4 text-lg leading-relaxed text-[#3f4d45]">{v.summary}</p>
+            <p className="mt-4 text-lg leading-relaxed text-[#3f4d45]">{v.blurb}</p>
             <div className="mt-5 flex gap-3 text-sm font-semibold text-[#5c6b62]">
               <span className="rounded-lg bg-[#f3f7f4] px-3 py-1.5">⏱ {v.durationLabel}</span>
               <span className="rounded-lg bg-[#f3f7f4] px-3 py-1.5">🔇 Muted autoplay</span>
@@ -113,7 +112,6 @@ export default async function Home() {
       </section>
 
       <SiteFooter />
-      <VideoSchema video={v} />
     </div>
   );
 }

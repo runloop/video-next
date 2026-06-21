@@ -92,12 +92,20 @@ export interface ChannelBranding {
    *   - `page`: no pop-ups or banner ads on the page, plus the honest pre-roll disclosure.
    *   - `footage` (optional): the genuine-footage assurance — real, never AI-generated
    *     (dog channel only, addressing "dog tv no ai").
+   *   - `noMusicNote` (optional): a truthful "no added music" note, rendered ONLY on
+   *     watch/stream pages whose item has `has_music === false` (see hasNoMusic in
+   *     catalogue.ts). This is a strict per-item claim — it must NEVER be shown
+   *     unconditionally or channel-wide, because some items DO have music. Dog-only:
+   *     it targets the "dog tv no music" search intent. Omitted on the cat channel —
+   *     Cat TV videos never have music, so there's no distinction to surface. Must
+   *     contain no "live"/"cam"/"continuous" wording.
    * Keep each to a single short sentence so they read as facts, not promises.
    */
   viewingNotes: {
     playback: string;
     page: string;
     footage?: string;
+    noMusicNote?: string;
   };
   /**
    * A natural-language cross-promo to the sibling channel, shown after the intro.
@@ -147,6 +155,9 @@ export const CHANNELS: Record<string, ChannelBranding> = {
       playback:
         "Cat TV with no ads interrupting it: once a video starts it plays straight through, with no ad breaks cutting across the action your cat is stalking.",
       page: "There are no pop-ups or banner ads on the page either — the only ad is the short one YouTube plays before the video begins, and after that it's uninterrupted.",
+      // No noMusicNote: Cat TV videos never have music, so there's no per-item music
+      // distinction to surface (and no "no music" search intent on the cat side). The
+      // note is dog-only.
     },
     crossPromo: {
       href: "https://www.dogtvfordogs.com",
@@ -283,6 +294,8 @@ export const CHANNELS: Record<string, ChannelBranding> = {
       playback:
         "Dog TV with no ads interrupting it: once a walk starts it plays straight through, with no ad breaks disturbing the calm your dog has settled into.",
       page: "There are no pop-ups or banner ads on the page either — the only ad is the short one YouTube plays before the walk begins, and after that it's uninterrupted.",
+      noMusicNote:
+        "No added music on this walk — just calming, natural woodland ambience with birdsong in the background.",
     },
     crossPromo: {
       href: "https://www.cattvforcats.com",

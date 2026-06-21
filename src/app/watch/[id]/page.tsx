@@ -7,6 +7,7 @@ import VideoEmbed from "@/components/VideoEmbed";
 import VideoCard from "@/components/VideoCard";
 import VideoSchema from "@/components/VideoSchema";
 import { getVideo, getVideos, getRelated } from "@/lib/videos";
+import { hasNoMusic } from "@/lib/catalogue";
 import { getBranding, getCategoriesForTags } from "@/lib/channel";
 
 export const revalidate = 3600;
@@ -88,6 +89,14 @@ export default async function WatchPage({
           {SITE.viewingNotes.footage && `${SITE.viewingNotes.footage} `}
           {SITE.viewingNotes.playback} {SITE.viewingNotes.page}
         </p>
+
+        {/* Per-item music note: only when the DB flag is explicitly false. Items with
+            music (true) or unknown (null) show nothing — never claimed music-free. */}
+        {hasNoMusic(v) && SITE.viewingNotes.noMusicNote && (
+          <p className="mt-3 max-w-3xl text-base leading-relaxed text-[#5c6b62]">
+            {SITE.viewingNotes.noMusicNote}
+          </p>
+        )}
 
         {themes.length > 0 && (
           <div className="mt-6 flex flex-wrap items-center gap-2 text-sm">

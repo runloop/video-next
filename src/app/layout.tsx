@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
-import { Nunito, Fredoka } from "next/font/google";
+import { Inter, Fredoka } from "next/font/google";
 import { getBranding } from "@/lib/channel";
 import SiteSchema from "@/components/SiteSchema";
 import "./globals.css";
 
 const SITE = getBranding();
 
-const nunito = Nunito({
+const inter = Inter({
   variable: "--font-body",
   subsets: ["latin"],
 });
@@ -51,7 +51,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${nunito.variable} ${fredoka.variable} h-full antialiased`}
+      className={`${inter.variable} ${fredoka.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col font-body">
         <SiteSchema />

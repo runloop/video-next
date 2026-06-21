@@ -5,7 +5,7 @@ import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 import VideoEmbed from "@/components/VideoEmbed";
 import { getLiveStreams, getStream } from "@/lib/videos";
-import { relativeDay, formatCount } from "@/lib/catalogue";
+import { relativeDay, formatCount, hasNoMusic } from "@/lib/catalogue";
 import { getBranding } from "@/lib/channel";
 
 // Match the live-stream cache window so a new stream surfaces (and an ended one
@@ -85,6 +85,13 @@ export default async function StreamPage({
 
         {s.summary && (
           <p className="mt-5 max-w-3xl text-lg leading-relaxed text-[#3f4d45]">{s.summary}</p>
+        )}
+
+        {/* Per-item music note: only when the stream's DB flag is explicitly false. */}
+        {hasNoMusic(s) && SITE.viewingNotes.noMusicNote && (
+          <p className="mt-4 max-w-3xl text-base leading-relaxed text-[#5c6b62]">
+            {SITE.viewingNotes.noMusicNote}
+          </p>
         )}
       </article>
 

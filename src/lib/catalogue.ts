@@ -35,6 +35,14 @@ export interface Video {
   views: number;
   /** Concurrent live viewers (active streams only); 0 otherwise. */
   liveViewers: number;
+  /**
+   * Whether this item has added music, from the DB `has_music` flag.
+   * `true` = has music, `false` = no added music (natural sound only),
+   * `null` = unknown (flag absent). Deliberately NOT coerced to false: only an
+   * explicit `false` may drive a "no added music" note (see hasNoMusic). A null
+   * must never be presented as music-free.
+   */
+  hasMusic: boolean | null;
 }
 
 /** A published-video row, as selected by the catalogue query in videos.ts. */
@@ -46,6 +54,8 @@ export interface PublishedRow {
   title: string;
   description: string | null;
   tags: string[] | null;
+  /** `public.projects.has_music`; null when the column is null/absent. */
+  has_music: boolean | null;
 }
 
 /** An active-stream row, as selected by the live-stream query in videos.ts. */
@@ -58,6 +68,8 @@ export interface StreamRow {
   title: string;
   description: string | null;
   tags: string[] | null;
+  /** `streams_active.has_music`; null when the column is null/absent. */
+  has_music: boolean | null;
 }
 
 /** The shape both sources normalise to before mapping into a Video. */
@@ -70,6 +82,7 @@ interface Common {
   date: Date | string | null;
   views: number;
   liveViewers: number;
+  hasMusic: boolean | null;
 }
 
 // Default published-video target length when the DB stores 0 (minutes).
@@ -161,6 +174,24 @@ function toIsoDate(value: Date | string | null): string {
   return (value instanceof Date ? value : new Date(value)).toISOString().slice(0, 10);
 }
 
+/**
+ * Normalise the raw `has_music` flag to a strict tri-state. Only a real boolean
+ * survives; anything else (null, undefined, missing column) becomes `null` =
+ * "unknown" — never coerced to false, so an unknown can never read as music-free.
+ */
+function toHasMusic(value: boolean | null | undefined): boolean | null {
+  return typeof value === "boolean" ? value : null;
+}
+
+/**
+ * Whether a video is eligible for the truthful "no added music" note: ONLY when
+ * the flag is explicitly `false`. `true` (has music) and `null` (unknown) both
+ * return false, so the note never appears unless we know there's no added music.
+ */
+export function hasNoMusic(video: Pick<Video, "hasMusic">): boolean {
+  return video.hasMusic === false;
+}
+
 // --- normalisation + mapping ------------------------------------------------
 
 function publishedToCommon(row: PublishedRow): Common {
@@ -173,6 +204,7 @@ function publishedToCommon(row: PublishedRow): Common {
     date: row.published_at,
     views: row.views ?? 0,
     liveViewers: 0,
+    hasMusic: toHasMusic(row.has_music),
   };
 }
 
@@ -186,6 +218,7 @@ function streamToCommon(row: StreamRow): Common {
     date: row.started_at,
     views: row.views ?? 0,
     liveViewers: row.live_viewers ?? 0,
+    hasMusic: toHasMusic(row.has_music),
   };
 }
 
@@ -208,6 +241,7 @@ function toVideo(c: Common, config: TitleConfig, seen: Set<string>): Video {
     uploadDate: toIsoDate(c.date),
     views: c.views,
     liveViewers: c.liveViewers,
+    hasMusic: c.hasMusic,
   };
 }
 

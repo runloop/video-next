@@ -12,6 +12,7 @@ import {
   relativeDay,
   formatCount,
   titleWithKeywords,
+  hasNoMusic,
   type PublishedRow,
   type StreamRow,
   type TitleConfig,
@@ -35,6 +36,7 @@ function publishedRow(over: Partial<PublishedRow> = {}): PublishedRow {
     title: "A Video",
     description: "A description.",
     tags: [],
+    has_music: null,
     ...over,
   };
 }
@@ -49,6 +51,7 @@ function streamRow(over: Partial<StreamRow> = {}): StreamRow {
     title: "Live Now",
     description: "Streaming.",
     tags: [],
+    has_music: null,
     ...over,
   };
 }
@@ -327,5 +330,66 @@ describe("formatCount", () => {
   test("compacts thousands and millions", () => {
     expect(formatCount(1234)).toBe("1.2K");
     expect(formatCount(2_500_000)).toBe("2.5M");
+  });
+});
+
+describe("has_music mapping", () => {
+  test("published: false flag maps to hasMusic false (cat channel)", () => {
+    const [v] = publishedToVideos([publishedRow({ has_music: false })], CAT);
+    expect(v.hasMusic).toBe(false);
+  });
+
+  test("published: true flag maps to hasMusic true (cat channel)", () => {
+    const [v] = publishedToVideos([publishedRow({ has_music: true })], CAT);
+    expect(v.hasMusic).toBe(true);
+  });
+
+  test("published: null flag stays null — never coerced to false (cat channel)", () => {
+    const [v] = publishedToVideos([publishedRow({ has_music: null })], CAT);
+    expect(v.hasMusic).toBeNull();
+  });
+
+  test("stream: false flag maps to hasMusic false (dog channel)", () => {
+    const [v] = streamsToVideos([streamRow({ has_music: false })], DOG);
+    expect(v.hasMusic).toBe(false);
+  });
+
+  test("stream: true flag maps to hasMusic true (dog channel)", () => {
+    const [v] = streamsToVideos([streamRow({ has_music: true })], DOG);
+    expect(v.hasMusic).toBe(true);
+  });
+
+  test("stream: null flag stays null (dog channel)", () => {
+    const [v] = streamsToVideos([streamRow({ has_music: null })], DOG);
+    expect(v.hasMusic).toBeNull();
+  });
+
+  test("published on the dog channel carries the flag too", () => {
+    const [v] = publishedToVideos([publishedRow({ has_music: false })], DOG);
+    expect(v.hasMusic).toBe(false);
+  });
+});
+
+describe("hasNoMusic (note eligibility)", () => {
+  test("eligible only when the flag is explicitly false", () => {
+    expect(hasNoMusic({ hasMusic: false })).toBe(true);
+  });
+
+  test("not eligible when the item has music", () => {
+    expect(hasNoMusic({ hasMusic: true })).toBe(false);
+  });
+
+  test("not eligible when the flag is unknown (null) — never claimed music-free", () => {
+    expect(hasNoMusic({ hasMusic: null })).toBe(false);
+  });
+
+  test("matches the mapped Video for a no-music published row", () => {
+    const [v] = publishedToVideos([publishedRow({ has_music: false })], DOG);
+    expect(hasNoMusic(v)).toBe(true);
+  });
+
+  test("matches the mapped Video for a music-bearing stream row", () => {
+    const [v] = streamsToVideos([streamRow({ has_music: true })], DOG);
+    expect(hasNoMusic(v)).toBe(false);
   });
 });

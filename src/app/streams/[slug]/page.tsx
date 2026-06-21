@@ -83,9 +83,12 @@ export default async function StreamPage({
           {started && <span className="rounded-lg bg-[#f3f7f4] px-3 py-1.5">⏱ Started {started}</span>}
         </div>
 
-        {s.summary && (
-          <p className="mt-5 max-w-3xl text-lg leading-relaxed text-[#3f4d45]">{s.summary}</p>
-        )}
+        {s.summary &&
+          s.summary.split(/\n{2,}/).map((para, i) => (
+            <p key={i} className="mt-5 max-w-3xl text-lg leading-relaxed text-[#3f4d45]">
+              {para}
+            </p>
+          ))}
 
         {/* Per-item music note: only when the stream's DB flag is explicitly false. */}
         {hasNoMusic(s) && SITE.viewingNotes.noMusicNote && (

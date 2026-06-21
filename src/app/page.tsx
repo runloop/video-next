@@ -43,7 +43,8 @@ export default async function Home() {
             <span className="inline-flex items-center gap-1.5 rounded-full bg-accent-soft px-3 py-1 text-sm font-bold text-accent">
               <span className="h-2 w-2 rounded-full bg-accent animate-pulse" /> Streaming now
             </span>
-            <h1 className="mt-3 font-display text-4xl font-bold leading-[1.1]">{v.keyword}</h1>
+            <h1 className="mt-3 font-display text-4xl font-bold leading-[1.1]">{SITE.homeHeading}</h1>
+            <p className="mt-3 text-xl font-semibold text-[#1f2a24]">Now playing: {v.keyword}</p>
             <p className="mt-4 text-lg leading-relaxed text-[#3f4d45]">{v.summary}</p>
             <div className="mt-5 flex gap-3 text-sm font-semibold text-[#5c6b62]">
               <span className="rounded-lg bg-[#f3f7f4] px-3 py-1.5">⏱ {v.durationLabel}</span>

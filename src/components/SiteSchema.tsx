@@ -3,10 +3,13 @@
 // Rendered once from the root layout, so it appears on every page.
 import { getBranding } from "@/lib/channel";
 
-export function organizationLd() {
+const SCHEMA_CONTEXT = "https://schema.org";
+
+// Context-free nodes so they can be embedded in a single @graph (see below); the
+// exported *Ld helpers re-add @context for standalone use.
+function organizationNode() {
   const SITE = getBranding();
   return {
-    "@context": "https://schema.org",
     "@type": "Organization",
     name: SITE.footerBy,
     url: SITE.url,
@@ -14,18 +17,32 @@ export function organizationLd() {
   };
 }
 
-export function webSiteLd() {
+function webSiteNode() {
   const SITE = getBranding();
   return {
-    "@context": "https://schema.org",
     "@type": "WebSite",
     name: SITE.footerBy,
     url: SITE.url,
   };
 }
 
+export function organizationLd() {
+  return { "@context": SCHEMA_CONTEXT, ...organizationNode() };
+}
+
+export function webSiteLd() {
+  return { "@context": SCHEMA_CONTEXT, ...webSiteNode() };
+}
+
 export default function SiteSchema() {
-  const ld = [organizationLd(), webSiteLd()];
+  // Combine the nodes under a single @graph rather than a top-level array, so
+  // the script holds one object with a string @context. Consumers that assume
+  // one object per ld+json script (e.g. SEO tooling doing
+  // `parsed["@context"].toLowerCase()`) then don't choke on an array.
+  const ld = {
+    "@context": SCHEMA_CONTEXT,
+    "@graph": [organizationNode(), webSiteNode()],
+  };
   return (
     <script
       type="application/ld+json"

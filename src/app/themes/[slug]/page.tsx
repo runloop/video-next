@@ -42,6 +42,10 @@ export default async function ThemePage({
   if (!category) notFound();
 
   const videos = await getVideosByTag(category.tags);
+  // Sibling themes for the same channel, from config — never the current one.
+  // These spread link equity across themes; nav-only (noindex, follow) themes are
+  // intentionally surfaced here too (the sitemap still leaves them out).
+  const siblings = getCategories().filter((c) => c.slug !== category.slug);
 
   return (
     <div className="flex min-h-screen flex-col bg-white text-[#1f2a24] font-body">
@@ -66,6 +70,23 @@ export default async function ThemePage({
               <VideoCard key={video.slug} video={video} />
             ))}
           </div>
+        )}
+
+        {siblings.length > 0 && (
+          <section className="mt-12 border-t border-[#e6ede8] pt-8">
+            <h2 className="font-display text-2xl font-bold">More themes to explore</h2>
+            <div className="mt-4 flex flex-wrap gap-2 text-sm">
+              {siblings.map((s) => (
+                <Link
+                  key={s.slug}
+                  href={`/themes/${s.slug}`}
+                  className="rounded-lg bg-[#f3f7f4] px-3 py-1.5 font-semibold text-accent hover:bg-[#e6ede8]"
+                >
+                  {s.title}
+                </Link>
+              ))}
+            </div>
+          </section>
         )}
       </main>
 

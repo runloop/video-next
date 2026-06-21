@@ -17,7 +17,7 @@ export default function VideoEmbed({
   });
   return (
     <iframe
-      className="h-full w-full"
+      className="absolute inset-0 h-full w-full"
       src={`https://www.youtube-nocookie.com/embed/${videoId}?${params}`}
       title={title}
       allow="autoplay; encrypted-media; picture-in-picture"

@@ -28,6 +28,10 @@ export default function VideoCard({
       <img
         src={`https://i.ytimg.com/vi/${video.videoId}/mqdefault.jpg`}
         alt={video.title}
+        width={320}
+        height={180}
+        loading="lazy"
+        decoding="async"
         className="aspect-video w-full object-cover"
       />
       <div className="p-4">

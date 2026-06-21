@@ -35,7 +35,7 @@ export default async function Home() {
       {/* Split hero: video left, indexable text right */}
       <section className="mx-auto w-full max-w-6xl px-6 pb-10 pt-0 sm:pt-10">
         <div className="grid gap-8 lg:grid-cols-[1.4fr_1fr] lg:items-center">
-          <div className="-mx-6 aspect-video overflow-hidden bg-black sm:mx-0 sm:rounded-2xl sm:shadow-lg">
+          <div className="relative -mx-6 aspect-video overflow-hidden bg-black sm:mx-0 sm:rounded-2xl sm:shadow-lg">
             <VideoEmbed videoId={v.videoId} title={v.heading} />
           </div>
           <div>

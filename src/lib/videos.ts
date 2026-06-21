@@ -11,7 +11,7 @@
 // (revalidateTag('videos')) refreshes everything without a redeploy.
 import { unstable_cache } from "next/cache";
 import { query } from "./db";
-import { getChannelSchema, getBranding, type Category } from "./channel";
+import { getChannelSchema, getBranding, type Category, type ChannelBranding } from "./channel";
 import {
   publishedToVideos,
   streamsToVideos,
@@ -22,7 +22,27 @@ import {
   type Video,
   type PublishedRow,
   type StreamRow,
+  type TitleConfig,
+  type ChannelKind,
 } from "./catalogue";
+
+// --- SEO title config (channel config → pure templating) --------------------
+//
+// catalogue.ts appends the search phrase to each video's own title but stays
+// env/config-free, so we derive its TitleConfig here from channel branding. The
+// cat/dog distinction and the head term come from the channel `name` ("Cat TV for
+// Cats" / "Dog TV for Dogs"), not a hard-coded per-schema switch.
+
+/** Derive the channel kind from branding — cat unless the name reads as a dog channel. */
+function channelKind(branding: ChannelBranding): ChannelKind {
+  return /\bdog/i.test(branding.name) ? "dog" : "cat";
+}
+
+/** Build the pure TitleConfig for the active channel from its branding. */
+function titleConfigFor(branding: ChannelBranding): TitleConfig {
+  const kind = channelKind(branding);
+  return { kind, brand: kind === "cat" ? "Cat TV" : "Dog TV" };
+}
 
 // The catalogue Video type is the app's core domain type; re-export it here so
 // existing `@/lib/videos` imports keep working.
@@ -53,7 +73,7 @@ const loadCatalogue = unstable_cache(
        WHERE  base.privacy_status = 'public'
        ORDER BY pv.published_at DESC NULLS LAST`,
     );
-    return publishedToVideos(rows, getBranding().name);
+    return publishedToVideos(rows, titleConfigFor(getBranding()));
   },
   ["catalogue"],
   { tags: ["videos"], revalidate: REVALIDATE_CATALOGUE },
@@ -121,7 +141,7 @@ const loadLiveStreams = unstable_cache(
        WHERE  s.is_held = false AND s.did_fail = false AND s.ended_at IS NULL
        ORDER BY s.started_at DESC`,
     );
-    return streamsToVideos(rows, getBranding().name);
+    return streamsToVideos(rows, titleConfigFor(getBranding()));
   },
   ["live-streams"],
   { tags: ["videos"], revalidate: REVALIDATE_LIVE },

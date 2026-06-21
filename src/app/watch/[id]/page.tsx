@@ -25,7 +25,9 @@ export async function generateMetadata({
   const v = await getVideo(id);
   if (!v) return {};
   return {
-    title: v.metaTitle,
+    // metaTitle already ends with the brand head ("… Cat TV for Cats to Watch"), so
+    // render it absolute — the root layout's "· {site name}" template would double it.
+    title: { absolute: v.metaTitle },
     description: v.summary,
     alternates: { canonical: `/watch/${v.slug}` },
     openGraph: {

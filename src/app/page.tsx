@@ -89,6 +89,29 @@ export default async function Home() {
         </div>
       </section>
 
+      {/* Brand block — ties the brand name to the site for brand-term ranking */}
+      <section id="brand" className="scroll-mt-20 border-t border-[#e6ede8] bg-[#fafcfb]">
+        <div className="mx-auto w-full max-w-3xl px-6 py-12">
+          <h2 className="font-display text-3xl font-bold">About {SITE.footerBy}</h2>
+          <div className="mt-4 flex flex-col gap-4 text-lg leading-relaxed text-[#3f4d45]">
+            {SITE.aboutBrand.map((p, i) => (
+              <p key={i}>{p}</p>
+            ))}
+            <p>
+              Find {SITE.footerBy} on{" "}
+              <a
+                href={SITE.youtube}
+                className="font-semibold text-accent hover:underline"
+                rel="noopener"
+              >
+                YouTube
+              </a>
+              .
+            </p>
+          </div>
+        </div>
+      </section>
+
       <SiteFooter />
       <VideoSchema video={v} />
     </div>

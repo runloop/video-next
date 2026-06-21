@@ -51,8 +51,21 @@ export interface ChannelBranding {
    * active deployment, so each channel gets its own URL.
    */
   streamsSlug: string;
-  /** "Made with 🐾 by …" credit in the footer. */
+  /**
+   * The brand name behind the channel (e.g. "Patsy's Garden", "Harmony Hounds").
+   * Drives the footer credit, the homepage "About <brand>" block and the
+   * Organization JSON-LD `name`. This is the term real searchers use, distinct
+   * from the descriptive site `name` ("Cat TV for Cats").
+   */
   footerBy: string;
+  /**
+   * Short, indexable copy for the homepage "About <brand>" block, tying the
+   * brand name to the site so it ranks for its own brand terms. Truthful to the
+   * footage: keep cat copy about set-up scenes and hunting instinct (no
+   * feeders-as-calm framing, no fish), dog copy about calming walks (footage may
+   * include other animals and music). Never say "live".
+   */
+  aboutBrand: string[];
   /**
    * The homepage <h1> — the site-level, head-intent heading (e.g. "Cat TV: videos
    * for cats to watch"). Distinct from the featured video's own title, which renders
@@ -116,6 +129,10 @@ export const CHANNELS: Record<string, ChannelBranding> = {
     streamsLabel: "24/7 Cat TV",
     streamsSlug: "24-7-cat-tv",
     footerBy: "Patsy's Garden",
+    aboutBrand: [
+      "Patsy's Garden is the cat TV channel behind Cat TV for Cats. Every video is filmed in Patsy's garden, where we build varied set-ups across the bird tables, walls, stools and lawn to draw in a busy crowd of birds and squirrels for your cat to stalk.",
+      "It's the same Patsy's Garden bird and squirrel footage that cats follow on YouTube, gathered here and streaming 24/7 — quick, darting movement made to spark an indoor cat's hunting instinct and keep them pouncing at the screen.",
+    ],
     homeHeading: "Cat TV: birds & squirrel videos for cats to watch",
     videosHeading: "Cat videos for cats to watch",
     videosTitle: "Cat videos for cats to watch",
@@ -246,6 +263,10 @@ export const CHANNELS: Record<string, ChannelBranding> = {
     streamsLabel: "24/7 Dog TV",
     streamsSlug: "24-7-dog-tv",
     footerBy: "Harmony Hounds",
+    aboutBrand: [
+      "Harmony Hounds is the dog TV channel behind Dog TV for Dogs. Every walk is real footage filmed at a dog's pace on woodland trails, bluebell paths and quiet coast — made to settle anxious and home-alone dogs with gentle motion and soft natural sound.",
+      "It's the same Harmony Hounds walks that dogs settle in front of on YouTube, gathered here and streaming 24/7 — long, steady trails through the seasons to give restless dogs a calm window onto the outside world.",
+    ],
     homeHeading: "Dog TV: calming walk videos for dogs to watch",
     videosHeading: "Dog walk videos for dogs to watch",
     videosTitle: "Dog walk videos for dogs to watch",

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter, Fredoka } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
 import { getBranding } from "@/lib/channel";
 import SiteSchema from "@/components/SiteSchema";
 import "./globals.css";
@@ -56,6 +57,7 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col font-body">
         <SiteSchema />
         {children}
+        <Analytics />
       </body>
     </html>
   );

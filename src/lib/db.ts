@@ -1,10 +1,15 @@
 // Read-only Postgres access. The app connects as the `video_readonly` role and only
 // ever issues SELECTs (see docs/adr/0001-video-data-fetching-and-caching.md).
 //
-// The pool is created lazily and memoised on `globalThis` so that Next.js dev HMR
-// doesn't open a new pool on every reload. On Vercel each serverless instance gets
-// its own pool; `max` is kept low because queries only run on cache miss / ISR
-// revalidation, never per visitor.
+// The pool is created lazily and memoised on `globalThis` so a process only ever
+// holds one pool: Next.js dev HMR doesn't open a new pool on every reload, and
+// `next build` doesn't open a fresh pool per page render. Memoising everywhere is
+// safe because each runtime — a Vercel serverless instance, a build worker, the dev
+// server — is a separate process with its own `globalThis`, so this still yields one
+// pool per instance. Without it, production static generation leaks a pool per query
+// and exhausts Postgres `max_connections` ("too many clients already", SQLSTATE 53300).
+// `max` is kept low because queries only run on cache miss / ISR revalidation, never
+// per visitor.
 import { Pool } from "pg";
 
 declare global {
@@ -28,11 +33,7 @@ function createPool(): Pool {
 }
 
 function getPool(): Pool {
-  const pool = globalThis.__videoPool ?? createPool();
-  if (process.env.NODE_ENV !== "production") {
-    globalThis.__videoPool = pool;
-  }
-  return pool;
+  return (globalThis.__videoPool ??= createPool());
 }
 
 /** Run a parameterised read query and return the rows. */

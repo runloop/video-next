@@ -49,14 +49,17 @@ long-tail unit is `{X} for cats/dogs to watch`. A keyword is *not* a whole headi
 _Avoid_: the misnomer in `Video.keyword`, which today holds the entire composed
 heading, not a keyword (being corrected — see ambiguities).
 
-**SEO override** (`seo_title`, `seo_slug`, `seo_description`):
+**SEO override** (`seo_title`, `seo_slug`, `seo_description`, `seo_blurb`):
 Hand-authored columns on the shared DB that, when set, *replace* the value the app
 would otherwise derive. `seo_title` is a flat override of the whole heading + meta
 title (nothing appended); unset, it falls back to the title + a light brand
-(`— Cat TV`). `seo_description` is the long-form below-the-fold copy; the meta/OG
-description and the card **blurb** are both *derived* from it (no separate columns).
-`seo_slug` is used verbatim as the URL and never auto-suffixed (the DB enforces its
-uniqueness). The blanket `… for Cats to Watch` suffix on every page is *not* wanted —
+(`— Cat TV`). `seo_description` is the long-form below-the-fold copy, rendered in full;
+the meta/OG description is *derived* from it (~155 chars, sentence boundary). `seo_blurb`
+is the card subtitle, authored to its own ~90-char budget (capped), falling back to the
+first sentence of the description. Splitting blurb from the meta description lets each be
+written to its own length, the same reason `<h1>` and `<title>` were kept distinct in
+spirit. `seo_slug` is used verbatim as the URL and never auto-suffixed (the DB enforces
+its uniqueness). The blanket `… for Cats to Watch` suffix on every page is *not* wanted —
 the head term lives on the home/`/videos`/theme headings, and repeating it per video
 reads as a templated footprint.
 _Avoid_: "templated title" for the authored path — that's the fallback, not the goal.

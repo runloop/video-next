@@ -3,6 +3,8 @@ import {
   slugify,
   durationFromMinutes,
   toBlurb,
+  capBlurb,
+  toMetaDescription,
   publishedToVideos,
   streamsToVideos,
   byPopularity,
@@ -40,6 +42,7 @@ function publishedRow(over: Partial<PublishedRow> = {}): PublishedRow {
     seo_title: null,
     seo_slug: null,
     seo_description: null,
+    seo_blurb: null,
     ...over,
   };
 }
@@ -58,6 +61,7 @@ function streamRow(over: Partial<StreamRow> = {}): StreamRow {
     seo_title: null,
     seo_slug: null,
     seo_description: null,
+    seo_blurb: null,
     ...over,
   };
 }
@@ -265,8 +269,10 @@ describe("seo_description override", () => {
     );
     // Rendered in full below the fold.
     expect(v.summary).toBe(authored);
-    // Blurb (card subtitle AND meta/OG description) is the first-sentence trim of it.
+    // The card blurb (no authored seo_blurb here) is the first-sentence trim of it.
     expect(v.blurb).toBe("Goldfinches and tits visit a busy garden feeder.");
+    // The meta description is its own ~155-char derivation off the same effective copy.
+    expect(v.metaDescription).toBe("Goldfinches and tits visit a busy garden feeder.");
   });
 
   test("falls back to the project description when null", () => {
@@ -284,6 +290,131 @@ describe("seo_description override", () => {
       CAT,
     );
     expect(v.summary).toBe("Raw project description.");
+  });
+});
+
+describe("capBlurb", () => {
+  test("leaves a short blurb untouched", () => {
+    expect(capBlurb("Goldfinches at the feeder.")).toBe("Goldfinches at the feeder.");
+  });
+
+  test("caps at 90 with an ellipsis (same style as toBlurb)", () => {
+    const long = "x".repeat(120);
+    const capped = capBlurb(long);
+    expect(capped.endsWith("…")).toBe(true);
+    expect(capped.length).toBeLessThanOrEqual(88);
+  });
+});
+
+describe("toMetaDescription", () => {
+  test("uses the first sentence whole when it fits within ~155", () => {
+    expect(toMetaDescription("Birds at the feeder. And squirrels too.")).toBe(
+      "Birds at the feeder.",
+    );
+  });
+
+  test("a first sentence longer than 155 is truncated at a word boundary with an ellipsis", () => {
+    const text = `${"word ".repeat(40)}end.`; // ~204 chars, no sentence break before 155
+    const meta = toMetaDescription(text);
+    expect(meta.endsWith("…")).toBe(true);
+    expect(meta.length).toBeLessThanOrEqual(155);
+    // Cut on a space, so no partial word survives before the ellipsis.
+    expect(meta.slice(0, -1).endsWith("word")).toBe(true);
+  });
+
+  test("multi-sentence copy past 155 cuts at the last sentence end before 155 (no ellipsis)", () => {
+    const s1 = "A".repeat(80) + "."; // 81 chars
+    const s2 = "B".repeat(80) + "."; // would push past 155
+    const meta = toMetaDescription(`${s1} ${s2}`);
+    expect(meta).toBe(s1);
+    expect(meta.length).toBeLessThanOrEqual(155);
+  });
+});
+
+describe("seo_blurb override", () => {
+  test("uses an authored blurb verbatim when it fits 90", () => {
+    const [v] = publishedToVideos(
+      [
+        publishedRow({
+          description: "Raw project description.",
+          seo_blurb: "Goldfinches at a busy feeder.",
+        }),
+      ],
+      CAT,
+    );
+    expect(v.blurb).toBe("Goldfinches at a busy feeder.");
+  });
+
+  test("caps an authored blurb longer than 90 with an ellipsis", () => {
+    const long = "Goldfinches and tits and robins and sparrows all crowd a busy garden feeder through the morning light.";
+    const [v] = publishedToVideos([publishedRow({ seo_blurb: long })], CAT);
+    expect(v.blurb.endsWith("…")).toBe(true);
+    expect(v.blurb.length).toBeLessThanOrEqual(88);
+  });
+
+  test("falls back to the derived 90-char blurb when null", () => {
+    const [v] = publishedToVideos(
+      [
+        publishedRow({
+          description: "Raw project description. With a second sentence.",
+          seo_blurb: null,
+        }),
+      ],
+      CAT,
+    );
+    expect(v.blurb).toBe("Raw project description.");
+  });
+
+  test("blank/whitespace authored blurb falls through to the derived blurb", () => {
+    const [v] = publishedToVideos(
+      [publishedRow({ description: "Raw project description.", seo_blurb: "   " })],
+      CAT,
+    );
+    expect(v.blurb).toBe("Raw project description.");
+  });
+
+  test("authored blurb is independent of the meta description", () => {
+    const [v] = publishedToVideos(
+      [
+        publishedRow({
+          description: "A full project description with detail.",
+          seo_blurb: "Snappy card line.",
+          seo_description: null,
+        }),
+      ],
+      CAT,
+    );
+    expect(v.blurb).toBe("Snappy card line.");
+    // Meta description still derives from the effective copy, not the card blurb.
+    expect(v.metaDescription).toBe("A full project description with detail.");
+  });
+});
+
+describe("metaDescription derivation", () => {
+  test("derives ~155 from an authored seo_description", () => {
+    const authored =
+      "Goldfinches, tits and robins visit a busy garden feeder while squirrels raid the seed tray below; a calm, slow scene filmed across one long bright morning in the garden.";
+    const [v] = publishedToVideos(
+      [publishedRow({ description: "Raw project description.", seo_description: authored })],
+      CAT,
+    );
+    expect(authored.length).toBeGreaterThan(155);
+    expect(v.metaDescription.length).toBeLessThanOrEqual(155);
+    expect(v.metaDescription.endsWith("…")).toBe(true);
+    expect(authored.startsWith(v.metaDescription.slice(0, -1))).toBe(true);
+  });
+
+  test("falls back to the project description when seo_description is null", () => {
+    const [v] = publishedToVideos(
+      [publishedRow({ description: "A short project description.", seo_description: null })],
+      CAT,
+    );
+    expect(v.metaDescription).toBe("A short project description.");
+  });
+
+  test("streams derive a meta description too", () => {
+    const [v] = streamsToVideos([streamRow({ description: "Streaming a calm scene." })], CAT);
+    expect(v.metaDescription).toBe("Streaming a calm scene.");
   });
 });
 

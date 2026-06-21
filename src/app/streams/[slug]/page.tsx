@@ -27,7 +27,7 @@ export async function generateMetadata({
   if (!s) return {};
   return {
     title: `${s.title} — ${getBranding().streamsLabel}`,
-    description: s.blurb,
+    description: s.metaDescription,
     // Streams are ephemeral — keep their pages out of the index so they don't
     // become dead/duplicate URLs once the stream ends. `follow` lets link equity
     // flow back to the indexable pages they point at.

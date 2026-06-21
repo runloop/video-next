@@ -28,14 +28,15 @@ export async function generateMetadata({
   return {
     // metaTitle is the authored seo_title (or "title — brand") and already carries any
     // brand, so render it absolute — the root layout's "· {site name}" template would
-    // double it. The meta/OG description is the derived blurb, not the full copy.
+    // double it. The meta/OG description is the ~155-char metaDescription (sized to the
+    // meta budget), not the 90-char card blurb and not the full copy.
     title: { absolute: v.metaTitle },
-    description: v.blurb,
+    description: v.metaDescription,
     alternates: { canonical: `/watch/${v.slug}` },
     openGraph: {
       type: "video.other",
       title: v.metaTitle,
-      description: v.blurb,
+      description: v.metaDescription,
       url: `/watch/${v.slug}`,
       images: [`https://i.ytimg.com/vi/${v.videoId}/maxresdefault.jpg`],
     },

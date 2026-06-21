@@ -69,6 +69,7 @@ const loadCatalogue = unstable_cache(
               p.seo_title,
               p.seo_slug,
               p.seo_description,
+              p.seo_blurb,
               a.views
        FROM   "${schema}".published_videos_all pv
        JOIN   public.published_videos base ON base.id = pv.id
@@ -142,7 +143,8 @@ const loadLiveStreams = unstable_cache(
               p.tags,
               p.seo_title,
               p.seo_slug,
-              p.seo_description
+              p.seo_description,
+              p.seo_blurb
        FROM   "${schema}".streams_active s
        JOIN   public.projects p ON p.id = s.project_id
        LEFT JOIN public.stream_analytics sa ON sa.stream_id = s.id

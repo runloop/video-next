@@ -23,8 +23,19 @@ export interface Video {
   heading: string;
   /** <title>/OG title — the same value as `heading` (see above). */
   metaTitle: string;
-  /** Short card subtitle / meta description — first sentence of `summary`, trimmed. */
+  /**
+   * Short card subtitle for the fixed card slot. The authored `seo_blurb` capped at
+   * 90 chars when set, else the first sentence of the effective description trimmed to
+   * 90 (`toBlurb(seo_description ?? description)`). Separate from `metaDescription`:
+   * the two have different length budgets (~90 vs ~155).
+   */
   blurb: string;
+  /**
+   * The `<meta>`/OG description — the effective description (`seo_description ??
+   * description`) trimmed to ~155 chars at a sentence/word boundary. NOT the 90-char
+   * card blurb and NOT the full `summary`.
+   */
+  metaDescription: string;
   /**
    * The long-form below-the-fold copy, rendered in full: the authored
    * `seo_description` when set, else the project description.
@@ -68,6 +79,7 @@ export interface PublishedRow {
   seo_title: string | null;
   seo_slug: string | null;
   seo_description: string | null;
+  seo_blurb: string | null;
 }
 
 /** An active-stream row, as selected by the live-stream query in videos.ts. */
@@ -90,6 +102,7 @@ export interface StreamRow {
   seo_title: string | null;
   seo_slug: string | null;
   seo_description: string | null;
+  seo_blurb: string | null;
 }
 
 /** The shape both sources normalise to before mapping into a Video. */
@@ -107,6 +120,7 @@ interface Common {
   seoTitle: string | null;
   seoSlug: string | null;
   seoDescription: string | null;
+  seoBlurb: string | null;
 }
 
 // Default published-video target length when the DB stores 0 (minutes).
@@ -192,6 +206,35 @@ export function toBlurb(description: string): string {
   return first.length > 90 ? `${first.slice(0, 87).trimEnd()}…` : first;
 }
 
+/**
+ * Cap an authored card blurb at 90 chars, truncating with an ellipsis (same style as
+ * `toBlurb`): keep the first 87 chars, trim trailing space, append "…". Authored blurbs
+ * should already fit the card slot; this is a guard, not a derivation.
+ */
+export function capBlurb(blurb: string): string {
+  return blurb.length > 90 ? `${blurb.slice(0, 87).trimEnd()}…` : blurb;
+}
+
+/**
+ * The `<meta>`/OG description, trimmed to ~155 chars at a boundary. Prefer the first
+ * sentence; if that already fits within 155, use it. Otherwise cut at the last sentence
+ * end before 155, falling back to the last word boundary, and append an ellipsis. Sized
+ * to the meta-description budget — wider than the 90-char card blurb (`toBlurb`).
+ */
+export function toMetaDescription(description: string): string {
+  const text = description.trim();
+  const first = text.split(/(?<=[.!?])\s/)[0] ?? text;
+  // A first sentence that fits is the cleanest description — use it whole.
+  if (first.length <= 155) return first;
+  // Otherwise cut the long copy at a boundary within 155 and mark the truncation.
+  const head = text.slice(0, 155);
+  const sentenceEnd = Math.max(head.lastIndexOf(". "), head.lastIndexOf("! "), head.lastIndexOf("? "));
+  if (sentenceEnd > 0) return head.slice(0, sentenceEnd + 1);
+  const wordEnd = head.lastIndexOf(" ");
+  const cut = wordEnd > 0 ? head.slice(0, wordEnd) : head.slice(0, 154);
+  return `${cut.trimEnd()}…`;
+}
+
 function toIsoDate(value: Date | string | null): string {
   if (!value) return "";
   return (value instanceof Date ? value : new Date(value)).toISOString().slice(0, 10);
@@ -231,6 +274,7 @@ function publishedToCommon(row: PublishedRow): Common {
     seoTitle: row.seo_title ?? null,
     seoSlug: row.seo_slug ?? null,
     seoDescription: row.seo_description ?? null,
+    seoBlurb: row.seo_blurb ?? null,
   };
 }
 
@@ -248,6 +292,7 @@ function streamToCommon(row: StreamRow): Common {
     seoTitle: row.seo_title ?? null,
     seoSlug: row.seo_slug ?? null,
     seoDescription: row.seo_description ?? null,
+    seoBlurb: row.seo_blurb ?? null,
   };
 }
 
@@ -258,6 +303,10 @@ function streamToCommon(row: StreamRow): Common {
 function toVideo(c: Common, config: TitleConfig, seen: Set<string>): Video {
   // The effective long-form copy: the authored override, else the project description.
   const summary = (c.seoDescription ?? "").trim() || c.description;
+  // The card blurb: an authored seo_blurb (capped at 90) wins; else derive from the
+  // effective copy. The meta/OG description is derived separately at ~155 chars.
+  const authoredBlurb = (c.seoBlurb ?? "").trim();
+  const blurb = authoredBlurb ? capBlurb(authoredBlurb) : toBlurb(summary);
   // An authored slug wins verbatim (its `seen` entry is seeded up front in toVideos);
   // otherwise derive from the title so existing /watch URLs stay stable.
   const authoredSlug = (c.seoSlug ?? "").trim();
@@ -269,8 +318,10 @@ function toVideo(c: Common, config: TitleConfig, seen: Set<string>): Video {
     // `<h1>` and `<title>`/OG are locked together under one `seo_title` override.
     heading,
     metaTitle: heading,
-    // Card subtitle and meta/OG description both derive from the effective copy.
-    blurb: toBlurb(summary),
+    // Card subtitle (authored or 90-char derivation) and meta/OG description (~155)
+    // are sized separately — see blurb/metaDescription above and on Video.
+    blurb,
+    metaDescription: toMetaDescription(summary),
     summary,
     slug,
     videoId: c.videoId,

@@ -19,8 +19,8 @@ this repo) versus **dedicated DB columns** owned by the data side.
 
 ## Decision
 
-Store three nullable, hand-authored columns — **`seo_title`, `seo_slug`,
-`seo_description`** — on **`public.projects`**, owned and written by the data side, read
+Store four nullable, hand-authored columns — **`seo_title`, `seo_slug`,
+`seo_description`, `seo_blurb`** — on **`public.projects`**, owned and written by the data side, read
 (never written) by the app via the existing `p.` join in the catalogue `SELECT`.
 
 - **DB, not app-side.** Editors already maintain content in Postgres without a redeploy
@@ -48,9 +48,15 @@ Store three nullable, hand-authored columns — **`seo_title`, `seo_slug`,
   fallback) yield around authored ones by seeding the `seen` set with authored slugs
   first.
 - **`seo_description`** — long-form below-the-fold copy, rendered in full. The
-  `<meta>`/OG description and the card **blurb** are both *derived* from it (first
-  sentence / ~155 chars), so there is no separate body, meta-description, or blurb
-  column. Unset → the project `description`.
+  `<meta>`/OG description is *derived* from it (~155 chars at a sentence boundary), so
+  there is no separate body or meta-description column. Unset → the project
+  `description`.
+- **`seo_blurb`** — the card subtitle, authored to its own ~90-char budget and capped
+  at 90 (it sits in a fixed card slot, unlike the meta description). Split out as its
+  own column rather than derived because blurb (~90) and meta description (~155) have
+  different length budgets, so authoring each separately lets editors write to the
+  available space. Unset → the first sentence of the effective description
+  (`toBlurb(seo_description ?? description)`).
 
 ## Consequences
 

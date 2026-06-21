@@ -115,87 +115,100 @@ export const CHANNELS: Record<string, ChannelBranding> = {
     },
     categories: [
       {
+        // Scene partition with no standalone search demand — kept for on-site
+        // navigation only (noindex, follow).
         slug: "bird-tables",
-        title: "Bird table TV for cats",
+        title: "Birds & squirrels on the bird tables",
         tags: ["birdtables", "birdtable"],
+        index: false,
         description:
-          "Birds and squirrels coming and going at the bird tables — close-up, eye-level footage that keeps watching cats happily glued to the screen.",
+          "Birds and squirrels coming and going on the bird tables — close, eye-level scenes set up to draw them in, with the darting movement that gets a watching cat stalking and pouncing.",
       },
       {
         slug: "garden-stools",
-        title: "Squirrels & Birds on the Garden Stools",
+        title: "Birds & squirrels on the garden stools",
         tags: ["stools", "stool"],
         index: false,
         description:
-          "Our busiest perch by far — squirrels and birds taking turns on the garden stools all day, with non-stop movement for cats to track.",
+          "One of our busiest set-ups — squirrels and birds taking turns on the garden stools, with non-stop movement for a cat to lock onto and chase.",
       },
       {
         slug: "garden-wall",
-        title: "Birds & Squirrels on the Garden Wall",
+        title: "Birds & squirrels on the garden wall",
         tags: ["wall"],
         index: false,
         description:
-          "A constant parade along the old garden wall — squirrels scampering and birds hopping between the stones.",
+          "A constant parade along the old garden wall — squirrels scampering and birds hopping between the stones, right at a cat's eye level.",
       },
       {
         slug: "lawn",
-        title: "Out on the Lawn",
+        title: "Birds & squirrels out on the lawn",
         tags: ["lawn"],
         index: false,
         description:
-          "Squirrels foraging and ground-feeding birds out on the open grass — plenty of low, darting movement at a cat's eye level.",
+          "Squirrels foraging and birds darting about on the open grass — plenty of low, sudden movement to set a cat off after them.",
       },
       {
+        // Scene partition with no standalone search demand — nav-only.
         slug: "fountain",
-        title: "Fountain & water TV for cats",
+        title: "Birds & squirrels at the fountain",
         tags: ["fountain"],
+        index: false,
         description:
-          "Birds and squirrels at the fountain, drinking and bathing — splashing water and gentle movement to soothe and entertain.",
+          "Birds and squirrels gathering at the fountain to drink and bathe — flicking water and quick, busy movement to catch a watching cat's eye.",
       },
       {
         slug: "patio",
-        title: "Visitors on the Patio",
+        title: "Birds & squirrels on the patio",
         tags: ["patio"],
         index: false,
         description:
-          "Squirrels and birds gathering around the patio feeders — a cosy, busy corner of the garden.",
+          "Squirrels and birds gathering on the patio, where a few scattered scenes draw a busy, ever-changing crowd for a cat to track.",
       },
       {
         slug: "rockery",
-        title: "Around the Rockery",
+        title: "Birds & squirrels around the rockery",
         tags: ["rock"],
         index: false,
         description:
-          "Birds and squirrels picking their way through the rocks and rockery, where the natural cover draws a varied crowd.",
+          "Birds and squirrels picking their way through the rocks, where the natural cover draws a varied crowd and keeps the movement unpredictable.",
       },
       {
         slug: "feeders",
-        title: "At the Feeders",
+        title: "Birds & squirrels in the garden",
         tags: ["feeders", "feeder"],
         index: false,
         description:
-          "Close-ups at the seed and nut feeders, where squirrels and birds jostle for the best spot.",
+          "Squirrels and birds jostling over scattered seed and nuts — busy, close-up scenes with the quick, snatching movement that pulls a cat to the screen.",
       },
       {
+        // Seasonal partition. No standalone term in the search data, but kept
+        // indexable; the video-count threshold (MIN_INDEXABLE_VIDEOS) gates it.
         slug: "winter",
-        title: "Winter TV for cats",
+        title: "Winter cat TV",
         tags: ["winter", "frost", "snow"],
+        index: true,
         description:
-          "Frosty winter scenes — birds and squirrels braving the cold, with snow and frost on the feeders.",
+          "Frosty winter scenes — birds and squirrels braving the cold across snow and frost, foraging hard and darting about for a watching cat to chase.",
       },
       {
+        // Seasonal demand: "cat tv christmas" (2,434), "christmas cat tv" (1,993),
+        // "christmas squirrels" (541).
         slug: "christmas",
-        title: "Christmas TV for cats",
+        title: "Christmas cat TV",
         tags: ["xmas", "sleigh"],
+        index: true,
         description:
-          "Festive feeders decked out for Christmas — birds and squirrels visiting amongst the decorations all season long.",
+          "Christmas cat TV: squirrels and birds darting through the festive decorations all season, with the lively movement that keeps a cat stalking and pouncing at the screen.",
       },
       {
+        // Seasonal demand: "cat tv halloween" (3,241), "halloween cat tv" (2,590).
         slug: "halloween",
-        title: "Halloween TV for cats",
+        title: "Halloween cat TV",
         tags: ["halloween", "pumpkins", "skulls", "graves"],
+        index: true,
         description:
-          "Spooky-season feeders with pumpkins and skulls — a bit of Halloween fun for the birds and squirrels (and the cats watching them).",
+          "Halloween cat TV: spooky-season scenes among the pumpkins and skulls, with squirrels pouncing and birds flapping to catch your cat's hunting instinct.",
       },
     ],
   },
@@ -227,39 +240,61 @@ export const CHANNELS: Record<string, ChannelBranding> = {
     },
     categories: [
       {
+        // Scene demand: "nature walk" (6,506), "forest walk" (4,530),
+        // "dog forest walk" (386), "dog tv forest walk" (303), "forest dog" (475).
         slug: "woodland-walks",
-        title: "Woodland walks for dogs",
+        title: "Dog TV forest walks",
         tags: ["forest", "woods"],
+        index: true,
         description:
-          "Long, steady walks through ancient woodland and forest, filmed at a dog's pace — gentle motion and soft natural sound to help anxious dogs settle.",
+          "Long, steady forest walks for dogs — a nature walk through ancient woodland filmed at a dog's pace, with gentle motion and soft natural sound to help anxious dogs relax.",
       },
       {
+        // Seasonal partition, no standalone search demand — nav-only.
         slug: "summer-walks",
         title: "Summer walks for dogs",
         tags: ["summer"],
+        index: false,
         description:
           "Bright, leafy summer walks — warm light and birdsong on calm, sunny days for dogs relaxing at home.",
       },
       {
+        // Seasonal partition, no standalone search demand — nav-only.
         slug: "autumn-walks",
         title: "Autumn walks for dogs",
         tags: ["autumn"],
+        index: false,
         description:
           "Crisp autumn walks through turning leaves and golden light — peaceful seasonal footage to keep dogs settled indoors.",
       },
       {
+        // Seasonal partition, no standalone search demand — nav-only.
         slug: "winter-walks",
         title: "Winter walks for dogs",
         tags: ["winter", "frost"],
+        index: false,
         description:
           "Still, frosty winter walks — quiet trails and crisp morning air for calm, cosy days inside.",
       },
       {
+        // Scene demand: "dog beach" (850), "dog tv beach" (253),
+        // "dogs at the beach" (120).
         slug: "beach-and-coast",
-        title: "Beach & coast walks for dogs",
+        title: "Dog TV beach walks",
         tags: ["beach", "coast"],
+        index: true,
         description:
-          "Open coastal walks along the shore — sea air, soft waves and wide horizons for a change of scene.",
+          "Open beach and coast walks for dogs — soft waves, sea air and wide horizons along the shore, a calm change of scene for dogs watching at home.",
+      },
+      {
+        // Walk-type partition. Tenuous demand only — "dog pov" (505),
+        // "dog tv no animals" (262) — so nav-only, but copy uses that phrasing.
+        slug: "pov-walks",
+        title: "Dog POV walks (no animals)",
+        tags: ["pov", "noanimals", "no-animals"],
+        index: false,
+        description:
+          "First-person POV dog walks with no animals in shot — just the quiet trail ahead, for dogs who settle better without other animals on screen.",
       },
     ],
   },

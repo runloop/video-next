@@ -75,6 +75,49 @@ interface Common {
 // Default published-video target length when the DB stores 0 (minutes).
 const DEFAULT_DURATION_MINUTES = 600;
 
+// --- SEO title templating ---------------------------------------------------
+//
+// The raw YouTube `title` is emoji-stuffed and keyword-noisy, so instead of
+// inheriting it we generate a clean, keyword-led `<h1>` (`keyword`) and OG/`<title>`
+// (`metaTitle`) from data we already have: the video's tags + the channel.
+//
+// Every video keeps its own title verbatim; we append the recurring search phrase
+// `{Brand} for cats/dogs to watch` (the single biggest phrasing cluster in the data)
+// so each page carries the keyword while staying distinct. No scene/tag logic and no
+// page is excluded — the cat/dog distinction and the head term come from config
+// (TitleConfig), built once at the edge in videos.ts so this layer stays pure.
+// (Titles never contain "live" — the content is never presented as live — so there's
+// nothing to sanitise.)
+
+/** What kind of channel this is — drives the recurring "for cats/dogs to watch" unit. */
+export type ChannelKind = "cat" | "dog";
+
+/**
+ * Everything the pure title templating needs, derived from channel config at the edge
+ * (videos.ts) so catalogue.ts stays free of env/config. See titleConfigFor in videos.ts.
+ */
+export interface TitleConfig {
+  /** "cat" | "dog" — selects the phrasing family. */
+  kind: ChannelKind;
+  /** Head term for the appended keyword phrase, e.g. "Cat TV", "Dog TV". */
+  brand: string;
+}
+
+/**
+ * The SEO title for a video: the author's own title (verbatim, trimmed) with the search
+ * phrase `{Brand} for {Cats|Dogs} to Watch` appended, e.g.
+ * "Sunny morning at the bird table — Cat TV for Cats to Watch". Used for both the
+ * `<h1>` (keyword) and the `<title>`/OG (metaTitle); the watch page renders metaTitle
+ * with `absolute` so the layout's "· {site name}" template doesn't double the brand.
+ * If the title is empty, the keyword phrase stands alone.
+ */
+export function titleWithKeywords(rawTitle: string, config: TitleConfig): string {
+  const audience = config.kind === "cat" ? "Cats" : "Dogs";
+  const suffix = `${config.brand} for ${audience} to Watch`;
+  const title = (rawTitle ?? "").trim();
+  return title ? `${title} — ${suffix}` : suffix;
+}
+
 // --- mapping helpers (exported for direct testing) --------------------------
 
 export function slugify(input: string): string {
@@ -147,16 +190,18 @@ function streamToCommon(row: StreamRow): Common {
 }
 
 /** Map one normalised row into a Video, allocating a collision-free slug. */
-function toVideo(c: Common, siteName: string, seen: Set<string>): Video {
+function toVideo(c: Common, config: TitleConfig, seen: Set<string>): Video {
   return {
     title: c.title,
     tags: c.tags,
-    // SEO fields fall back to title/description until dedicated DB columns land.
-    keyword: c.title,
-    metaTitle: `${c.title} — ${siteName}`,
+    // The author's title (sanitised of "live") with the search phrase appended.
+    keyword: titleWithKeywords(c.title, config),
+    metaTitle: titleWithKeywords(c.title, config),
     blurb: toBlurb(c.description),
     summary: c.description,
     body: "",
+    // Slug still derives from the raw title so existing /watch URLs stay stable; the
+    // templated titles are non-unique by design and would collapse to one base slug.
     slug: uniqueSlug(c.title || "video", seen),
     videoId: c.videoId,
     ...durationFromMinutes(c.minutes),
@@ -167,19 +212,19 @@ function toVideo(c: Common, siteName: string, seen: Set<string>): Video {
 }
 
 /** Map a list of normalised rows, sharing one `seen` set so slugs stay unique. */
-function toVideos(commons: Common[], siteName: string): Video[] {
+function toVideos(commons: Common[], config: TitleConfig): Video[] {
   const seen = new Set<string>();
-  return commons.map((c) => toVideo(c, siteName, seen));
+  return commons.map((c) => toVideo(c, config, seen));
 }
 
 /** Map published-video rows (catalogue order: newest first) into Videos. */
-export function publishedToVideos(rows: PublishedRow[], siteName: string): Video[] {
-  return toVideos(rows.map(publishedToCommon), siteName);
+export function publishedToVideos(rows: PublishedRow[], config: TitleConfig): Video[] {
+  return toVideos(rows.map(publishedToCommon), config);
 }
 
 /** Map active-stream rows (newest first) into Videos. */
-export function streamsToVideos(rows: StreamRow[], siteName: string): Video[] {
-  return toVideos(rows.map(streamToCommon), siteName);
+export function streamsToVideos(rows: StreamRow[], config: TitleConfig): Video[] {
+  return toVideos(rows.map(streamToCommon), config);
 }
 
 // --- ranking / filtering over the mapped list -------------------------------

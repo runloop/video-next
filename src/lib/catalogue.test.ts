@@ -11,12 +11,19 @@ import {
   featured,
   relativeDay,
   formatCount,
+  titleWithKeywords,
   type PublishedRow,
   type StreamRow,
+  type TitleConfig,
   type Video,
 } from "./catalogue";
 
-const SITE = "Cat TV";
+// Stand-in title configs mirroring what videos.ts builds from channel branding.
+const CAT: TitleConfig = { kind: "cat", brand: "Cat TV" };
+const DOG: TitleConfig = { kind: "dog", brand: "Dog TV" };
+
+// Most legacy cases below only care about mapping mechanics, not the title — alias CAT.
+const SITE = CAT;
 
 /** A published row with sensible defaults, overridable per field. */
 function publishedRow(over: Partial<PublishedRow> = {}): PublishedRow {
@@ -96,9 +103,23 @@ describe("publishedToVideos", () => {
     expect(videos.map((v) => v.slug)).toEqual(["garden", "garden-2", "garden-3"]);
   });
 
-  test("builds metaTitle from the supplied site name", () => {
-    const [v] = publishedToVideos([publishedRow({ title: "Garden" })], SITE);
-    expect(v.metaTitle).toBe("Garden — Cat TV");
+  test("appends the search phrase to the author's own title", () => {
+    const [v] = publishedToVideos(
+      [publishedRow({ title: "Sunny morning at the bird table", tags: ["birdtables"] })],
+      CAT,
+    );
+    expect(v.keyword).toBe("Sunny morning at the bird table — Cat TV for Cats to Watch");
+    expect(v.metaTitle).toBe("Sunny morning at the bird table — Cat TV for Cats to Watch");
+    // The raw title is preserved verbatim for card/nav use.
+    expect(v.title).toBe("Sunny morning at the bird table");
+  });
+
+  test("keeps the title even when there are no tags (no scene logic)", () => {
+    const [v] = publishedToVideos([publishedRow({ title: "Garden", tags: [] })], CAT);
+    expect(v.keyword).toBe("Garden — Cat TV for Cats to Watch");
+    expect(v.metaTitle).toBe("Garden — Cat TV for Cats to Watch");
+    // Slug still derives from the raw title, preserving existing /watch URLs.
+    expect(v.slug).toBe("garden");
   });
 
   test("trims CHAR-padded video ids and defaults null fields", () => {
@@ -123,6 +144,63 @@ describe("streamsToVideos", () => {
     const [v] = streamsToVideos([streamRow({ views: 48000, live_viewers: 1200 })], SITE);
     expect(v.views).toBe(48000);
     expect(v.liveViewers).toBe(1200);
+  });
+});
+
+describe("titleWithKeywords", () => {
+  test("cat: appends the head term + 'for cats to watch' to the author's title", () => {
+    expect(titleWithKeywords("Sunny morning at the bird table", CAT)).toBe(
+      "Sunny morning at the bird table — Cat TV for Cats to Watch",
+    );
+  });
+
+  test("dog: appends 'for dogs to watch'", () => {
+    expect(titleWithKeywords("A walk through the bluebells", DOG)).toBe(
+      "A walk through the bluebells — Dog TV for Dogs to Watch",
+    );
+  });
+
+  test("uses the title verbatim regardless of tags/scene — no exclusion", () => {
+    // Any title is used as-is; there is no scene concept and nothing is dropped.
+    expect(titleWithKeywords("Totally off-script footage", CAT)).toBe(
+      "Totally off-script footage — Cat TV for Cats to Watch",
+    );
+  });
+
+  test("trims surrounding whitespace but keeps the title otherwise verbatim", () => {
+    expect(titleWithKeywords("  Bird table 4K 🐿️  ", CAT)).toBe(
+      "Bird table 4K 🐿️ — Cat TV for Cats to Watch",
+    );
+  });
+
+  test("the keyword phrase stands alone when the title is empty", () => {
+    expect(titleWithKeywords("", CAT)).toBe("Cat TV for Cats to Watch");
+    expect(titleWithKeywords("   ", DOG)).toBe("Dog TV for Dogs to Watch");
+  });
+});
+
+describe("toVideo titling", () => {
+  test("keyword and metaTitle both append the phrase to the real title", () => {
+    const [v] = publishedToVideos(
+      [publishedRow({ title: "Bird table at dawn", tags: ["birdtables"] })],
+      CAT,
+    );
+    expect(v.keyword).toBe("Bird table at dawn — Cat TV for Cats to Watch");
+    expect(v.metaTitle).toBe("Bird table at dawn — Cat TV for Cats to Watch");
+    // The raw title is preserved verbatim for card/nav use.
+    expect(v.title).toBe("Bird table at dawn");
+  });
+
+  test("slugs stay collision-free when titles repeat", () => {
+    const videos = publishedToVideos(
+      [
+        publishedRow({ title: "Bird Table", tags: [] }),
+        publishedRow({ title: "Bird Table", tags: [] }),
+        publishedRow({ title: "Bird Table", tags: [] }),
+      ],
+      CAT,
+    );
+    expect(new Set(videos.map((v) => v.slug)).size).toBe(3);
   });
 });
 
